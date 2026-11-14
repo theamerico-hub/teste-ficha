@@ -1,0 +1,1066 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sistema de Fichas — Espaço de Estética</title>
+<style>
+:root{
+  --bg:#f6f2ee; --card:#fff; --ink:#2f2a27; --muted:#8a7f78; --line:#ebe3dc;
+  --rose:#b7826f; --rose-d:#9a6a58; --rose-l:#f4e8e2; --sage:#7d9283; --sage-l:#e6ece7;
+  --side:#2f2724; --side-ink:#d9cdc6; --danger:#b4534a;
+  --radius:14px; --shadow:0 1px 2px rgba(60,40,30,.05),0 4px 16px rgba(60,40,30,.06);
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.45 -apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif}
+h1,h2,h3{font-family:Georgia,"Times New Roman",serif;font-weight:normal;margin:0}
+button{font:inherit;cursor:pointer}
+input,select,textarea{font:inherit;color:inherit}
+a{color:inherit}
+
+/* ---------- layout ---------- */
+.shell{display:flex;min-height:100vh}
+.side{width:240px;flex:none;background:var(--side);color:var(--side-ink);display:flex;flex-direction:column;position:sticky;top:0;height:100vh;z-index:30}
+.side .brand{display:flex;gap:10px;align-items:center;padding:22px 18px 18px}
+.logo{width:38px;height:38px;border-radius:50%;background:var(--rose);color:#fff;display:grid;place-items:center;font-family:Georgia,serif;font-size:19px;flex:none}
+.side .brand b{display:block;color:#fff;font-family:Georgia,serif;font-weight:normal;font-size:16px;line-height:1.2}
+.side .brand small{font-size:11px;opacity:.7}
+.nav{display:flex;flex-direction:column;gap:2px;padding:6px 10px;flex:1}
+.nav .grp{font-size:10px;text-transform:uppercase;letter-spacing:.1em;opacity:.5;padding:14px 10px 6px}
+.nav a{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:9px;text-decoration:none;color:var(--side-ink);font-size:14px}
+.nav a:hover{background:rgba(255,255,255,.06);color:#fff}
+.nav a.on{background:var(--rose);color:#fff}
+.nav a .ic{width:18px;text-align:center;opacity:.9}
+.nav a .cnt{margin-left:auto;font-size:11px;opacity:.7}
+.side .foot{padding:14px 18px;font-size:11px;opacity:.6;border-top:1px solid rgba(255,255,255,.08)}
+.main{flex:1;min-width:0;display:flex;flex-direction:column}
+.topbar{display:flex;align-items:center;gap:12px;padding:14px 28px;background:rgba(246,242,238,.92);backdrop-filter:blur(6px);position:sticky;top:0;z-index:20;border-bottom:1px solid var(--line)}
+.topbar .menu{display:none}
+.gsearch{flex:1;max-width:560px;min-width:0;position:relative}
+.gsearch input{width:100%;padding:10px 14px 10px 38px;border:1px solid var(--line);border-radius:11px;background:#fff}
+.gsearch::before{content:"⌕";position:absolute;left:13px;top:50%;transform:translateY(-52%);color:var(--muted);font-size:18px}
+.gsearch .res{position:absolute;left:0;right:0;top:calc(100% + 6px);background:#fff;border-radius:12px;box-shadow:0 10px 30px rgba(0,0,0,.12);overflow:hidden;display:none}
+.gsearch .res.on{display:block}
+.gsearch .res a{display:flex;gap:10px;align-items:center;padding:9px 12px;text-decoration:none;font-size:14px}
+.gsearch .res a:hover,.gsearch .res a.hl{background:var(--rose-l)}
+.gsearch .res .m{color:var(--muted);font-size:12px}
+.topbar .sp{flex:1}
+.content{padding:24px 28px 70px;max-width:1240px;width:100%}
+.ptitle{display:flex;align-items:flex-end;gap:12px;margin-bottom:20px;flex-wrap:wrap}
+.ptitle h2{font-size:28px}
+.ptitle p{margin:2px 0 0;color:var(--muted)}
+.ptitle .act{margin-left:auto;display:flex;gap:8px;flex-wrap:wrap}
+
+/* ---------- componentes ---------- */
+.btn{border:1px solid var(--line);background:var(--card);color:var(--ink);padding:9px 14px;border-radius:10px;display:inline-flex;align-items:center;gap:6px;white-space:nowrap;text-decoration:none}
+.btn:hover{border-color:var(--rose)}
+.btn.primary{background:var(--rose);border-color:var(--rose);color:#fff}
+.btn.primary:hover{background:var(--rose-d)}
+.btn.ghost{background:transparent;border-color:transparent;color:var(--muted)}
+.btn.ghost:hover{color:var(--ink);background:var(--rose-l)}
+.btn.danger{color:var(--danger)}
+.btn.sm{padding:6px 10px;font-size:13px}
+.btn[disabled]{opacity:.5;pointer-events:none}
+.card{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px}
+.card h3{font-size:18px;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.card h3 a{margin-left:auto;font-family:-apple-system,"Segoe UI",Roboto,sans-serif;font-size:13px;color:var(--rose-d);text-decoration:none}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:18px}
+.kpi{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);padding:18px 20px;cursor:pointer;border:1px solid transparent}
+.kpi:hover{border-color:var(--rose-l)}
+.kpi .l{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+.kpi .v{font-family:Georgia,serif;font-size:34px;line-height:1.1;margin-top:6px}
+.kpi .s{font-size:12px;color:var(--muted);margin-top:2px}
+.dash{display:grid;grid-template-columns:1.6fr 1fr;gap:16px}
+.dash .col{display:flex;flex-direction:column;gap:16px}
+.quick{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:18px}
+.quick button{background:#fff;border:1px dashed #dccfc6;border-radius:12px;padding:14px;text-align:left;display:flex;gap:12px;align-items:center}
+.quick button:hover{border-color:var(--rose);border-style:solid}
+.quick .qi{width:38px;height:38px;border-radius:10px;background:var(--rose-l);color:var(--rose-d);display:grid;place-items:center;font-size:18px;flex:none}
+.quick b{display:block;font-weight:600;font-size:14px}
+.quick small{color:var(--muted);font-size:12px}
+.li{display:flex;gap:12px;align-items:center;padding:10px 4px;border-bottom:1px solid var(--line);cursor:pointer}
+.li:last-child{border-bottom:none}
+.li:hover{background:#fcfaf8}
+.li .t{flex:1;min-width:0}
+.li .t b{font-weight:600;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.li .t small{color:var(--muted);font-size:12.5px}
+.li .r{color:var(--muted);font-size:12.5px;text-align:right;white-space:nowrap}
+.avatar{width:40px;height:40px;border-radius:50%;background:var(--rose-l);color:var(--rose-d);display:grid;place-items:center;font-weight:600;font-size:14px;flex:none;overflow:hidden;background-size:cover;background-position:center}
+.bars .b{display:grid;grid-template-columns:130px 1fr 30px;gap:10px;align-items:center;font-size:13px;margin:7px 0}
+.bars .b span:first-child{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bars .track{height:8px;background:var(--rose-l);border-radius:5px;overflow:hidden}
+.bars .fill{height:100%;background:var(--rose);border-radius:5px}
+.bars .b span:last-child{text-align:right;color:var(--muted)}
+.none{color:var(--muted);font-size:14px;padding:6px 0}
+
+.filters{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px;align-items:center}
+.filters input,.filters select{padding:9px 12px;border:1px solid var(--line);border-radius:10px;background:#fff}
+.filters input[type=search]{flex:1;min-width:220px}
+.filters .muted{margin-left:auto}
+table.tbl{width:100%;border-collapse:collapse;background:#fff;border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow)}
+.tbl th{text-align:left;font-size:11.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);font-weight:600;padding:12px 14px;background:#fbf8f5;border-bottom:1px solid var(--line);cursor:pointer;user-select:none;white-space:nowrap}
+.tbl th.s::after{content:" ↓"} .tbl th.s.asc::after{content:" ↑"}
+.tbl td{padding:11px 14px;border-bottom:1px solid var(--line);font-size:14px;vertical-align:middle}
+.tbl tr:last-child td{border-bottom:none}
+.tbl tbody tr{cursor:pointer}
+.tbl tbody tr:hover td{background:#fcf8f5}
+.tbl .who{display:flex;gap:10px;align-items:center}
+.tbl .who .avatar{width:34px;height:34px;font-size:12px}
+.pill{display:inline-block;font-size:11.5px;padding:2px 9px;border-radius:20px;background:var(--rose-l);color:var(--rose-d)}
+.pill.g{background:var(--sage-l);color:#4d6153}
+.pill.w{background:#fff3df;color:#8a6420}
+.muted{color:var(--muted)}
+
+.empty{text-align:center;color:var(--muted);padding:50px 20px}
+.empty h2{color:var(--ink);margin-bottom:6px}
+
+/* ficha */
+.chead{display:flex;gap:16px;align-items:center;margin-bottom:16px;flex-wrap:wrap}
+.chead .avatar{width:64px;height:64px;font-size:22px}
+.chead h2{font-size:26px}
+.chead .meta{color:var(--muted)}
+.chead .actions{margin-left:auto;display:flex;gap:8px;flex-wrap:wrap}
+.tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);margin-bottom:18px;overflow-x:auto}
+.tab{border:none;background:none;padding:10px 16px;color:var(--muted);border-bottom:2px solid transparent;margin-bottom:-1px;white-space:nowrap;text-decoration:none}
+.tab.on{color:var(--ink);border-color:var(--rose)}
+.tab .count{background:var(--rose-l);color:var(--rose-d);border-radius:20px;padding:0 7px;font-size:12px;margin-left:4px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:14px 16px}
+.field{display:flex;flex-direction:column;gap:5px}
+.field.full{grid-column:1/-1}
+.field label{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+.field input,.field select,.field textarea{padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:#fff}
+.field textarea{min-height:80px;resize:vertical}
+input:focus,select:focus,textarea:focus{outline:2px solid var(--rose-l);border-color:var(--rose)!important}
+.section-t{font-family:Georgia,serif;font-size:18px;margin:22px 0 12px;padding-bottom:6px;border-bottom:1px solid var(--line)}
+.section-t:first-child{margin-top:0}
+.formbar{display:flex;gap:10px;justify-content:flex-end;margin-top:20px;position:sticky;bottom:10px}
+.formbar .card{display:flex;gap:10px;padding:10px;align-items:center}
+.q{display:grid;grid-template-columns:1fr auto;gap:8px 14px;align-items:center;padding:10px 0;border-bottom:1px dashed var(--line)}
+.q .txt{font-size:14px}
+.q .yn{display:flex;gap:4px}
+.q .yn label{border:1px solid var(--line);border-radius:8px;padding:4px 12px;font-size:13px;cursor:pointer;user-select:none}
+.q .yn input{display:none}
+.q .yn label:has(input[value=sim]:checked){background:var(--rose-l);border-color:var(--rose);color:var(--rose-d);font-weight:600}
+.q .yn label:has(input[value=nao]:checked){background:var(--sage-l);border-color:var(--sage);color:#4d6153;font-weight:600}
+.q .det{grid-column:1/-1;display:none}
+.q.sim .det{display:block}
+.q .det input{width:100%;padding:8px 10px;border:1px solid var(--line);border-radius:8px}
+.qgrid{display:grid;grid-template-columns:1fr 1fr;gap:0 32px}
+.q .det2{grid-column:1/-1;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.q .det2 input{flex:1;min-width:160px;padding:7px 10px;border:1px solid var(--line);border-radius:8px;font-size:13px;background:#fdfbf9}
+.q .det2 .sub{font-size:13px;color:var(--muted);margin-left:4px}
+.decl{background:#fbf7f4;border-radius:12px;padding:14px 16px;margin-top:16px;font-size:14px}
+.aval{display:flex;flex-direction:column;gap:10px}
+.arow{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.arow .al{width:110px;font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip input{display:none}
+.field label.chip{text-transform:none;letter-spacing:0;font-size:inherit;color:var(--ink)}
+.decl label span{flex:1;min-width:0}
+.chip span{display:inline-block;border:1px solid var(--line);border-radius:20px;padding:5px 12px;font-size:13px;cursor:pointer;user-select:none;background:#fff}
+.chip span:hover{border-color:var(--rose)}
+.chip input:checked+span{background:var(--rose);border-color:var(--rose);color:#fff}
+.mini{padding:5px 10px;border:1px solid var(--line);border-radius:20px;font-size:13px;width:120px}
+.alert{background:var(--rose-l);color:var(--rose-d);border-radius:10px;padding:10px 14px;font-size:14px;margin-bottom:14px}
+.alert b{color:var(--ink)}
+.toolbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:14px}
+.toolbar .hint{color:var(--muted);font-size:13px;flex:1}
+.timeline{display:flex;flex-direction:column;gap:12px}
+.sess{background:#fff;border-radius:var(--radius);box-shadow:var(--shadow);padding:16px 18px;border-left:4px solid var(--rose)}
+.sess .h{display:flex;gap:10px;align-items:baseline;flex-wrap:wrap}
+.sess .dt{font-weight:600}
+.sess .proc{font-family:Georgia,serif;font-size:17px}
+.sess .reg{color:var(--muted);font-size:13px}
+.sess .h .act{margin-left:auto;display:flex;gap:4px}
+.sess .body{margin-top:6px;white-space:pre-wrap;font-size:14px}
+.sess .body .lbl{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.04em}
+.thumbs{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.thumb{position:relative;width:96px;height:96px;border-radius:10px;overflow:hidden;cursor:pointer;background:#eee}
+.thumb img{width:100%;height:100%;object-fit:cover;display:block}
+.tag{position:absolute;left:5px;top:5px;background:rgba(255,255,255,.92);color:var(--ink);font-size:10px;font-weight:600;padding:2px 6px;border-radius:5px;text-transform:uppercase;letter-spacing:.04em}
+.tag.antes{color:var(--rose-d)} .tag.depois{color:#4d6153}
+.photos{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px}
+.ph{background:#fff;border-radius:12px;overflow:hidden;box-shadow:var(--shadow);position:relative;border:2px solid transparent;cursor:pointer}
+.ph.sel{border-color:var(--rose)}
+.ph .img{aspect-ratio:3/4;background:#eee}
+.ph img{width:100%;height:100%;object-fit:cover;display:block}
+.ph .cap{padding:7px 9px;font-size:12px;color:var(--muted)}
+.ph .cap b{color:var(--ink);font-weight:600}
+.ph .n{position:absolute;right:6px;top:6px;width:24px;height:24px;border-radius:50%;background:var(--rose);color:#fff;font-size:13px;display:none;place-items:center;font-weight:600}
+.ph.sel .n{display:grid}
+.drop{border:2px dashed var(--line);border-radius:var(--radius);padding:18px;text-align:center;color:var(--muted);background:#fffaf7;cursor:pointer}
+.drop:hover,.drop.over{border-color:var(--rose);color:var(--rose-d)}
+.pending{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}
+.pend{width:150px;background:#fff;border-radius:10px;box-shadow:var(--shadow);overflow:hidden;font-size:12px}
+.pend img{width:100%;height:110px;object-fit:cover;display:block}
+.pend .ctr{padding:6px;display:flex;flex-direction:column;gap:4px}
+.pend select,.pend input{width:100%;padding:4px 6px;border:1px solid var(--line);border-radius:6px;font-size:12px}
+.proc-list .li{cursor:default}
+
+/* modais */
+.modal-bg{position:fixed;inset:0;background:rgba(40,28,22,.55);display:flex;align-items:center;justify-content:center;padding:20px;z-index:50}
+.modal{background:var(--card);border-radius:18px;max-width:640px;width:100%;max-height:92vh;overflow:auto;padding:24px;box-shadow:0 20px 60px rgba(0,0,0,.25)}
+.modal.wide{max-width:1100px}
+.modal h3{font-size:22px;margin-bottom:14px}
+.modal .mbar{display:flex;gap:10px;justify-content:flex-end;margin-top:18px;flex-wrap:wrap}
+.picker{position:relative}
+.picker .opts{position:absolute;left:0;right:0;top:100%;background:#fff;border-radius:10px;box-shadow:0 10px 30px rgba(0,0,0,.15);max-height:240px;overflow:auto;z-index:5;display:none}
+.picker .opts.on{display:block}
+.picker .opts div{padding:8px 12px;cursor:pointer;font-size:14px}
+.picker .opts div:hover{background:var(--rose-l)}
+.cmp{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.cmp figure{margin:0;background:#f2ece7;border-radius:12px;overflow:hidden}
+.cmp img{width:100%;max-height:68vh;object-fit:contain;display:block;background:#f2ece7}
+.cmp figcaption{padding:8px 12px;font-size:13px}
+.slider{position:relative;max-width:min(640px,56vh);margin:0 auto;border-radius:12px;overflow:hidden;user-select:none;touch-action:none;background:#f2ece7}
+.slider img{display:block;width:100%;pointer-events:none}
+.slider .top-img{position:absolute;inset:0;overflow:hidden}
+.slider .top-img img{width:100%;height:100%;object-fit:cover}
+.slider .bar{position:absolute;top:0;bottom:0;width:3px;background:#fff;box-shadow:0 0 6px rgba(0,0,0,.4)}
+.slider .bar::after{content:"⇆";position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:#fff;border-radius:50%;width:34px;height:34px;display:grid;place-items:center;color:var(--rose-d);font-size:16px}
+.slider .lb{position:absolute;bottom:10px;background:rgba(255,255,255,.9);padding:3px 9px;border-radius:6px;font-size:12px;font-weight:600}
+.viewer img{max-width:100%;max-height:75vh;display:block;margin:0 auto;border-radius:10px}
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;padding:10px 18px;border-radius:10px;z-index:100;font-size:14px;opacity:0;transition:.25s;pointer-events:none}
+.toast.on{opacity:1}
+.banner{background:#fff6e5;border:1px solid #f0dcb0;color:#7a5a1c;border-radius:12px;padding:10px 14px;margin-bottom:18px;display:flex;gap:10px;align-items:center;font-size:14px}
+.banner .btn{margin-left:auto}
+.lock{min-height:100vh;display:grid;place-items:center;padding:20px;background:var(--side)}
+.lock .card{max-width:340px;width:100%;text-align:center}
+.lock input{width:100%;padding:12px;font-size:20px;text-align:center;letter-spacing:.3em;border:1px solid var(--line);border-radius:10px;margin:14px 0}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+#print{display:none}
+.scrim{display:none}
+
+@media (max-width:1000px){
+  .kpis{grid-template-columns:repeat(2,1fr)}
+  .dash{grid-template-columns:1fr}
+}
+@media (max-width:860px){
+  .side{position:fixed;left:0;top:0;transform:translateX(-100%);transition:.2s}
+  .side.open{transform:none;box-shadow:0 0 40px rgba(0,0,0,.3)}
+  .scrim.on{display:block;position:fixed;inset:0;background:rgba(0,0,0,.3);z-index:25}
+  .topbar{padding:12px 14px}
+  .topbar .menu{display:inline-flex}
+  .topbar .btn .t{display:none}
+  .topbar .hide-sm{display:none}
+  .topbar .sp{display:none}
+  .content{padding:18px 14px 70px}
+  .quick{grid-template-columns:1fr}
+  .cmp{grid-template-columns:1fr}
+  .qgrid{grid-template-columns:1fr}
+  .arow .al{width:100%}
+  .tbl .hide-m{display:none}
+  .chead .actions{margin-left:0;width:100%}
+}
+@media print{
+  body{background:#fff}
+  .shell,.modal-bg,.toast{display:none!important}
+  #print{display:block;font-size:12px;color:#000}
+  #print h1{font-size:20px;margin-bottom:2px}
+  #print h2{font-size:15px;margin:14px 0 6px;border-bottom:1px solid #999;padding-bottom:3px}
+  #print table{width:100%;border-collapse:collapse}
+  #print td{padding:3px 6px;border-bottom:1px solid #ddd;vertical-align:top}
+  #print td.k{width:38%;color:#444}
+  #print .cols{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  #print h2{page-break-after:avoid}
+  #print .sig{margin-top:30px;display:flex;gap:40px}
+  #print .sig div{flex:1;border-top:1px solid #000;text-align:center;padding-top:4px}
+}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<div id="print"></div>
+<div class="toast" id="toast"></div>
+
+<script>
+/* =========================================================
+   CAMADA DE DADOS
+   Hoje: IndexedDB (fica no navegador do computador).
+   Na versão online, só este bloco "DB" é trocado pela nuvem
+   (Supabase) — o resto do sistema continua igual.
+   ========================================================= */
+const DB_NAME='fichas-estetica', DB_VER=2;
+let idb;
+function openDB(){
+  return new Promise((res,rej)=>{
+    const r=indexedDB.open(DB_NAME,DB_VER);
+    r.onupgradeneeded=()=>{
+      const d=r.result;
+      if(!d.objectStoreNames.contains('clients'))d.createObjectStore('clients',{keyPath:'id'});
+      if(!d.objectStoreNames.contains('sessions')){const s=d.createObjectStore('sessions',{keyPath:'id'});s.createIndex('clientId','clientId')}
+      if(!d.objectStoreNames.contains('photos')){const p=d.createObjectStore('photos',{keyPath:'id'});p.createIndex('clientId','clientId')}
+      if(!d.objectStoreNames.contains('procedures'))d.createObjectStore('procedures',{keyPath:'id'});
+    };
+    r.onsuccess=()=>{idb=r.result;res()};
+    r.onerror=()=>rej(r.error);
+  });
+}
+const _st=(s,m='readonly')=>idb.transaction(s,m).objectStore(s);
+const _rq=r=>new Promise((res,rej)=>{r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)});
+const DB={
+  all:s=>_rq(_st(s).getAll()),
+  put:(s,v)=>_rq(_st(s,'readwrite').put(v)),
+  del:(s,id)=>_rq(_st(s,'readwrite').delete(id)),
+};
+
+/* ================= utilidades ================= */
+const $=(sel,el=document)=>el.querySelector(sel);
+const $$=(sel,el=document)=>[...el.querySelectorAll(sel)];
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,8);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const norm=s=>String(s||'').normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase();
+const today=()=>{const d=new Date();return new Date(d-d.getTimezoneOffset()*6e4).toISOString().slice(0,10)};
+const fmtDate=d=>d?d.split('-').reverse().join('/'):'';
+const initials=n=>(n||'?').trim().split(/\s+/).filter(Boolean).slice(0,2).map(w=>w[0]).join('').toUpperCase();
+const plural=(n,s,p)=>`${n} ${n===1?s:p}`;
+function age(b){if(!b)return'';const d=new Date(b+'T12:00'),n=new Date();let a=n.getFullYear()-d.getFullYear();if(n<new Date(n.getFullYear(),d.getMonth(),d.getDate()))a--;return a>=0&&a<130?a+' anos':''}
+function daysSince(d){return d?Math.floor((new Date(today())-new Date(d))/864e5):null}
+function ago(d){const n=daysSince(d);if(n===null)return'';if(n<=0)return'hoje';if(n===1)return'ontem';if(n<30)return`há ${n} dias`;const m=Math.floor(n/30);return m<12?`há ${plural(m,'mês','meses')}`:`há ${plural(Math.floor(m/12),'ano','anos')}`}
+function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('on');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('on'),2400)}
+const LS={get:(k,d)=>{try{const v=localStorage.getItem(k);return v===null?d:JSON.parse(v)}catch{return d}},set:(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch{}}};
+const settings=()=>LS.get('fe-settings',{nome:'Espaço de Estética',pin:''});
+
+let urls=[];
+function blobURL(b){const u=URL.createObjectURL(b);urls.push(u);return u}
+function freeURLs(){urls.forEach(u=>URL.revokeObjectURL(u));urls=[]}
+async function compress(file,max=1600,q=.85){
+  let bmp;try{bmp=await createImageBitmap(file,{imageOrientation:'from-image'})}catch{bmp=await createImageBitmap(file)}
+  const sc=Math.min(1,max/Math.max(bmp.width,bmp.height));
+  const c=document.createElement('canvas');c.width=Math.round(bmp.width*sc);c.height=Math.round(bmp.height*sc);
+  c.getContext('2d').drawImage(bmp,0,0,c.width,c.height);
+  return new Promise(r=>c.toBlob(r,'image/jpeg',q));
+}
+
+/* ================= conteúdo fixo ================= */
+/* Ficha de anamnese — igual à ficha em papel da clínica */
+// [chave, pergunta, rótulo do campo "especifique" (ou null), sub-pergunta sim/não opcional]
+const ANAM_ESQ=[
+  ['lentes','Utiliza lentes de contato?',null],
+  ['epilepsia','Tem epilepsia / convulsões?',null],
+  ['intestino','Funcionamento intestinal regular?',null],
+  ['tratFacial','Tratamento facial anterior?','Especifique'],
+  ['agua','Ingere água com frequência?','Especifique'],
+  ['alcool','Ingere bebida alcoólica?','Especifique'],
+  ['sol','Exposição ao sol?','Frequência',['filtro','Filtro solar?']],
+  ['menstrual','Está no período menstrual?','Data da menstruação'],
+  ['sono','Boa qualidade do sono?','Horas por noite'],
+  ['protese','Possui prótese corporal/facial?','Especifique'],
+];
+const ANAM_DIR=[
+  ['tabagismo','Tabagismo?',null],
+  ['cardiaco','Alterações cardíacas?',null],
+  ['marcapasso','Portador de marcapasso?',null],
+  ['gestante','Gestante?','Semanas'],
+  ['cremes','Cremes ou loções faciais?','Especifique'],
+  ['atividade','Pratica atividade física?','Especifique'],
+  ['anticoncepcional','Utiliza anticoncepcional?','Qual?'],
+  ['alergia','Possui algum tipo de alergia?','Especifique'],
+  ['alimentacao','Possui uma boa alimentação?','Especifique'],
+  ['pele','Problemas de pele?','Especifique'],
+];
+const ANAMNESE=[...ANAM_ESQ,...ANAM_DIR];
+// respostas "sim" que geram aviso no topo da ficha
+const ALERTAS={alergia:'Alergia',gestante:'Gestante',cardiaco:'Alterações cardíacas',marcapasso:'Marcapasso',epilepsia:'Epilepsia/convulsões',protese:'Prótese corporal/facial',pele:'Problemas de pele'};
+// Avaliação profissional
+const AVAL={
+  oleosidade:['Oleosidade',['Alípica','Lipídica','Normal','Seborreica']],
+  espessura:['Espessura',['Espessa','Fina','Muito fina']],
+  fototipo:['Fototipo',['I','II','III','IV','V','VI']],
+  acne:['Acne grau',['I','II','III','IV']],
+  hidratacao:['Hidratação',['Desidratada','Normal']],
+};
+const LESOES=['Millium','Comedão','Pápula','Pústula','Cistos','Hipertricose','Ptose','Rugas','Acromia','Hipercromia','Foliculite','Queratose','Cicatriz','Atrofia','Xantelasma','Quelóide','Tumor','Nevo vascular','Nevo melanocítico','Verruga plana','Papiloma','Efélides','Bolhas','Abscessos','Hirsutismo','Nódulos','Víbices','Telangiectasia','Hipocromia'];
+const CATEGORIAS=['Facial','Corporal','Capilar','Depilação','Sobrancelhas e cílios','Outros'];
+const PROC_PADRAO=[['Limpeza de pele','Facial'],['Peeling químico','Facial'],['Microagulhamento','Facial'],['Hidratação facial','Facial'],['Drenagem linfática','Corporal'],['Massagem modeladora','Corporal'],['Radiofrequência','Corporal'],['Criolipólise','Corporal'],['Depilação a laser','Depilação'],['Design de sobrancelhas','Sobrancelhas e cílios']];
+
+/* ================= estado ================= */
+let D={clients:[],sessions:[],photos:[],procedures:[]};
+let ui={q:'',sort:'nome',asc:true,aPer:'mes',aProc:'',aQ:'',gQ:'',compare:[]};
+async function load(){
+  const [c,s,p,pr]=await Promise.all(['clients','sessions','photos','procedures'].map(DB.all));
+  D={clients:c,sessions:s,photos:p,procedures:pr};
+}
+const client=id=>D.clients.find(c=>c.id===id);
+const sessOf=cid=>D.sessions.filter(s=>s.clientId===cid).sort((a,b)=>(b.data||'').localeCompare(a.data||'')||(b.criado||0)-(a.criado||0));
+const photosOf=cid=>D.photos.filter(p=>p.clientId===cid);
+const lastPhoto=cid=>photosOf(cid).sort((a,b)=>(b.data||'').localeCompare(a.data||''))[0];
+function avatar(c,cls=''){const p=lastPhoto(c.id);return p?`<div class="avatar ${cls}" style="background-image:url(${blobURL(p.blob)})"></div>`:`<div class="avatar ${cls}">${esc(initials(c.nome))}</div>`}
+
+/* ================= rotas ================= */
+// #/painel  #/clientes  #/nova  #/cliente/ID/aba  #/atendimentos  #/galeria  #/procedimentos  #/ajustes
+function route(){const p=(location.hash||'#/painel').slice(2).split('/');return{page:p[0]||'painel',id:p[1],tab:p[2]||'dados'}}
+function go(h){if(location.hash===h)render();else location.hash=h}
+window.addEventListener('hashchange',()=>{closeModal();render();window.scrollTo(0,0)});
+
+/* ================= estrutura ================= */
+function render(){
+  freeURLs();
+  const r=route(), s=settings();
+  const nav=(h,ic,l,cnt,on)=>`<a href="${h}" class="${on?'on':''}"><span class="ic">${ic}</span>${l}${cnt!==undefined?`<span class="cnt">${cnt}</span>`:''}</a>`;
+  const inCli=['clientes','cliente','nova'].includes(r.page);
+  $('#root').innerHTML=`<div class="shell">
+    <aside class="side" id="side">
+      <div class="brand"><div class="logo">${esc(initials(s.nome).slice(0,1)||'E')}</div><div><b>${esc(s.nome)}</b><small>Sistema de fichas</small></div></div>
+      <nav class="nav">
+        ${nav('#/painel','◧','Painel',undefined,r.page==='painel')}
+        <div class="grp">Clientes</div>
+        ${nav('#/clientes','☺','Clientes',D.clients.length,inCli&&r.page!=='nova')}
+        ${nav('#/nova','＋','Cadastrar cliente',undefined,r.page==='nova')}
+        <div class="grp">Atendimento</div>
+        ${nav('#/atendimentos','✎','Atendimentos',D.sessions.length,r.page==='atendimentos')}
+        ${nav('#/galeria','◫','Antes & Depois',D.photos.length,r.page==='galeria')}
+        ${nav('#/procedimentos','✦','Procedimentos',D.procedures.length,r.page==='procedimentos')}
+        <div class="grp">Sistema</div>
+        ${nav('#/ajustes','⚙','Backup e ajustes',undefined,r.page==='ajustes')}
+      </nav>
+      <div class="foot">Dados salvos neste computador</div>
+    </aside>
+    <div class="scrim" id="scrim"></div>
+    <div class="main">
+      <header class="topbar">
+        <button class="btn ghost menu" id="menuBtn">☰</button>
+        <div class="gsearch"><input id="gq" type="search" placeholder="Buscar cliente (nome, telefone ou CPF)…" autocomplete="off"><div class="res" id="gres"></div></div>
+        <div class="sp"></div>
+        <button class="btn hide-sm" onclick="sessionModal()">✎ <span class="t">Registrar atendimento</span></button>
+        <a class="btn primary" href="#/nova">＋ <span class="t">Nova cliente</span></a>
+      </header>
+      <main class="content" id="content"></main>
+    </div>
+  </div>`;
+  const pages={painel:pPainel,clientes:pClientes,nova:pNova,cliente:pCliente,atendimentos:pAtend,galeria:pGaleria,procedimentos:pProc,ajustes:pAjustes};
+  $('#content').innerHTML=backupBanner()+(pages[r.page]||pPainel)(r);
+  wireShell();
+  (after[r.page]||(()=>{}))(r);
+}
+function wireShell(){
+  const side=$('#side'),scrim=$('#scrim');
+  $('#menuBtn').onclick=()=>{side.classList.add('open');scrim.classList.add('on')};
+  scrim.onclick=()=>{side.classList.remove('open');scrim.classList.remove('on')};
+  // busca global com resultados instantâneos
+  const gq=$('#gq'),gr=$('#gres');let hl=0,found=[];
+  const draw=()=>{
+    found=searchClients(gq.value).slice(0,7);
+    if(!gq.value.trim()){gr.classList.remove('on');return}
+    gr.innerHTML=found.length?found.map((c,i)=>`<a href="#/cliente/${c.id}" class="${i===hl?'hl':''}">${avatar(c)}<div><div>${esc(c.nome)}</div><div class="m">${esc(c.telefone||'')}</div></div></a>`).join('')
+      :`<a href="#/nova" class="hl">Nenhuma cliente encontrada — <b>cadastrar nova</b></a>`;
+    gr.classList.add('on');
+  };
+  gq.oninput=()=>{hl=0;draw()};
+  gq.onkeydown=e=>{
+    if(e.key==='ArrowDown'){hl=Math.min(hl+1,found.length-1);draw();e.preventDefault()}
+    if(e.key==='ArrowUp'){hl=Math.max(hl-1,0);draw();e.preventDefault()}
+    if(e.key==='Enter'){if(found[hl])go('#/cliente/'+found[hl].id);else if(!found.length&&gq.value.trim())go('#/nova')}
+    if(e.key==='Escape'){gq.value='';gr.classList.remove('on')}
+  };
+  gq.onblur=()=>setTimeout(()=>gr.classList.remove('on'),150);
+}
+function searchClients(q){
+  q=norm(q).trim();const qd=q.replace(/\D/g,'');
+  if(!q)return[...D.clients];
+  return D.clients.filter(c=>norm(c.nome).includes(q)||(qd.length>=3&&(((c.telefone||'').replace(/\D/g,'').includes(qd))||((c.cpf||'').replace(/\D/g,'').includes(qd)))));
+}
+function backupBanner(){
+  if(!D.clients.some(c=>!c.demo))return'';
+  const last=LS.get('fe-lastbackup',0);const d=last?Math.floor((Date.now()-last)/864e5):null;
+  if(d!==null&&d<7)return'';
+  return `<div class="banner">💾 ${d===null?'Nenhum backup feito ainda.':`Último backup há ${d} dias.`} Faça uma cópia de segurança regularmente.<button class="btn sm" onclick="exportBackup()">Fazer backup agora</button></div>`;
+}
+const after={};
+
+/* ================= PAINEL ================= */
+function pPainel(){
+  const s=settings(), t=today(), ym=t.slice(0,7), y=t.slice(0,4);
+  const h=new Date().getHours();
+  const saud=h<12?'Bom dia':h<18?'Boa tarde':'Boa noite';
+  const sesMes=D.sessions.filter(x=>(x.data||'').startsWith(ym));
+  const novasMes=D.clients.filter(c=>c.criado&&new Date(c.criado).toISOString().slice(0,7)===ym);
+  const sesHoje=D.sessions.filter(x=>x.data===t);
+  const ultimos=[...D.sessions].sort((a,b)=>(b.data||'').localeCompare(a.data||'')||(b.criado||0)-(a.criado||0)).slice(0,6);
+  const mes=new Date().getMonth()+1;
+  const aniv=D.clients.filter(c=>c.nascimento&&+c.nascimento.slice(5,7)===mes).sort((a,b)=>a.nascimento.slice(8).localeCompare(b.nascimento.slice(8)));
+  const sumidas=D.clients.map(c=>({c,u:sessOf(c.id)[0]})).filter(x=>x.u&&daysSince(x.u.data)>=60).sort((a,b)=>a.u.data.localeCompare(b.u.data)).slice(0,6);
+  const cont={};D.sessions.filter(x=>(x.data||'').startsWith(y)).forEach(x=>{const k=x.procedimento||'Sem nome';cont[k]=(cont[k]||0)+1});
+  const top=Object.entries(cont).sort((a,b)=>b[1]-a[1]).slice(0,6);const mx=top[0]?.[1]||1;
+  const mesNome=new Date().toLocaleDateString('pt-BR',{month:'long'});
+
+  const temDemo=D.clients.some(c=>c.demo);
+  const teste=`<div class="banner" style="background:var(--sage-l);border-color:#cfdbd2;color:#3f5546">🧪 <span><b>Versão de teste.</b> ${temDemo?'Você está vendo clientes de exemplo.':'Quer ver o sistema preenchido? Carregue clientes de exemplo.'} Não cadastre clientes reais nesta versão.</span>${temDemo?'<button class="btn sm" onclick="clearDemo()">Apagar exemplos</button>':'<button class="btn sm" onclick="loadDemo()">Carregar exemplos</button>'}</div>`;
+  return teste+`<div class="ptitle"><div><h2>${saud}!</h2><p>${new Date().toLocaleDateString('pt-BR',{weekday:'long',day:'numeric',month:'long',year:'numeric'})}</p></div></div>
+  <div class="kpis">
+    <div class="kpi" onclick="go('#/clientes')"><div class="l">Clientes cadastradas</div><div class="v">${D.clients.length}</div><div class="s">+${novasMes.length} este mês</div></div>
+    <div class="kpi" onclick="go('#/atendimentos')"><div class="l">Atendimentos no mês</div><div class="v">${sesMes.length}</div><div class="s">${plural(sesHoje.length,'hoje','hoje')}</div></div>
+    <div class="kpi" onclick="go('#/galeria')"><div class="l">Fotos registradas</div><div class="v">${D.photos.length}</div><div class="s">antes & depois</div></div>
+    <div class="kpi" onclick="document.getElementById('aniv').scrollIntoView({behavior:'smooth'})"><div class="l">Aniversariantes</div><div class="v">${aniv.length}</div><div class="s">em ${mesNome}</div></div>
+  </div>
+  <div class="quick">
+    <button onclick="go('#/nova')"><span class="qi">＋</span><span><b>Cadastrar cliente</b><small>Dados e ficha de anamnese</small></span></button>
+    <button onclick="sessionModal()"><span class="qi">✎</span><span><b>Registrar atendimento</b><small>Procedimento, evolução e fotos</small></span></button>
+    <button onclick="document.getElementById('gq').focus()"><span class="qi">⌕</span><span><b>Buscar cliente</b><small>Por nome, telefone ou CPF</small></span></button>
+  </div>
+  <div class="dash">
+    <div class="col">
+      <div class="card"><h3>Últimos atendimentos <a href="#/atendimentos">ver todos →</a></h3>
+        ${ultimos.length?ultimos.map(x=>{const c=client(x.clientId);if(!c)return'';const n=D.photos.filter(p=>p.sessionId===x.id).length;
+          return `<div class="li" onclick="go('#/cliente/${c.id}/evolucao')">${avatar(c)}<div class="t"><b>${esc(c.nome)}</b><small>${esc(x.procedimento||'Atendimento')}${x.regiao?' · '+esc(x.regiao):''}${n?` · 📷 ${n}`:''}</small></div><div class="r">${fmtDate(x.data)}<br>${ago(x.data)}</div></div>`}).join('')
+        :`<div class="none">Nenhum atendimento registrado ainda. <a href="#" onclick="sessionModal();return false">Registrar o primeiro</a>.</div>`}
+      </div>
+      <div class="card"><h3>Procedimentos mais realizados <span class="muted" style="font-size:13px;font-family:sans-serif">· ${y}</span></h3>
+        ${top.length?`<div class="bars">${top.map(([k,v])=>`<div class="b"><span title="${esc(k)}">${esc(k)}</span><div class="track"><div class="fill" style="width:${v/mx*100}%"></div></div><span>${v}</span></div>`).join('')}</div>`:'<div class="none">Aparece aqui conforme os atendimentos forem registrados.</div>'}
+      </div>
+    </div>
+    <div class="col">
+      <div class="card" id="aniv"><h3>🎂 Aniversariantes de ${mesNome}</h3>
+        ${aniv.length?aniv.map(c=>`<div class="li" onclick="go('#/cliente/${c.id}')">${avatar(c)}<div class="t"><b>${esc(c.nome)}</b><small>${fmtDate(c.nascimento).slice(0,5)} · faz ${+age(c.nascimento).split(' ')[0]+(c.nascimento.slice(5)>today().slice(5)?1:0)} anos</small></div>${c.nascimento.slice(5)===today().slice(5)?'<span class="pill">hoje!</span>':''}</div>`).join(''):'<div class="none">Nenhuma aniversariante este mês.</div>'}
+      </div>
+      <div class="card"><h3>Sem retorno há mais de 60 dias</h3>
+        ${sumidas.length?sumidas.map(({c,u})=>`<div class="li" onclick="go('#/cliente/${c.id}/evolucao')">${avatar(c)}<div class="t"><b>${esc(c.nome)}</b><small>Último: ${esc(u.procedimento||'atendimento')}</small></div><div class="r">${ago(u.data)}</div></div>`).join(''):'<div class="none">Todas as clientes estão em dia. 👏</div>'}
+      </div>
+    </div>
+  </div>`;
+}
+
+/* ================= CLIENTES (lista) ================= */
+function pClientes(){
+  return `<div class="ptitle"><div><h2>Clientes</h2><p>${plural(D.clients.length,'cliente cadastrada','clientes cadastradas')}</p></div>
+    <div class="act"><button class="btn" onclick="exportCSV()">⇩ Exportar lista</button><a class="btn primary" href="#/nova">＋ Nova cliente</a></div></div>
+  ${D.clients.length?`<div class="filters"><input type="search" id="cq" placeholder="Filtrar por nome, telefone ou CPF…" value="${esc(ui.q)}"><span class="muted" id="ccount"></span></div><div id="ctbl"></div>`
+  :`<div class="card empty"><h2>Nenhuma cliente cadastrada ainda</h2><p>Comece cadastrando a primeira ficha.</p><p><a class="btn primary" href="#/nova">＋ Cadastrar primeira cliente</a></p></div>`}`;
+}
+after.clientes=()=>{
+  const cq=$('#cq');if(!cq)return;
+  cq.oninput=()=>{ui.q=cq.value;drawClientTable()};
+  drawClientTable();cq.focus();
+};
+function drawClientTable(){
+  const rows=searchClients(ui.q).map(c=>{const ss=sessOf(c.id);return{c,n:ss.length,u:ss[0]?.data||'',idade:c.nascimento?+age(c.nascimento).split(' ')[0]:-1}});
+  const k=ui.sort,dir=ui.asc?1:-1;
+  rows.sort((a,b)=>{let x,y;if(k==='nome'){x=norm(a.c.nome);y=norm(b.c.nome)}else if(k==='u'){x=a.u;y=b.u}else{x=a[k];y=b[k]}return(x>y?1:x<y?-1:0)*dir});
+  const th=(key,l,cls='')=>`<th class="${cls} ${ui.sort===key?'s'+(ui.asc?' asc':''):''}" data-k="${key}">${l}</th>`;
+  $('#ccount').textContent=`${rows.length} de ${D.clients.length}`;
+  $('#ctbl').innerHTML=rows.length?`<table class="tbl"><thead><tr>${th('nome','Cliente')}${th('idade','Idade','hide-m')}<th class="hide-m">Telefone</th>${th('u','Última visita')}${th('n','Atend.','hide-m')}<th class="hide-m">Ficha</th></tr></thead><tbody>
+    ${rows.map(({c,n,u})=>{const al=Object.keys(ALERTAS).some(k=>c.anamnese?.[k]==='sim');const temAn=c.anamnese&&Object.keys(c.anamnese).length>2;
+      return `<tr onclick="go('#/cliente/${c.id}')"><td><div class="who">${avatar(c)}<div><b style="font-weight:600">${esc(c.nome)}</b>${al?' <span title="Possui alerta na anamnese" style="color:var(--danger)">⚠</span>':''}</div></div></td>
+      <td class="hide-m">${esc(age(c.nascimento))}</td><td class="hide-m">${esc(c.telefone||'—')}</td>
+      <td>${u?`${fmtDate(u)} <span class="muted" style="font-size:12px">(${ago(u)})</span>`:'<span class="muted">—</span>'}</td>
+      <td class="hide-m">${n}</td><td class="hide-m">${temAn?'<span class="pill g">completa</span>':'<span class="pill w">sem anamnese</span>'}</td></tr>`}).join('')}
+  </tbody></table>`:`<div class="card empty">Nenhuma cliente encontrada para “<b>${esc(ui.q)}</b>”. <p><a class="btn primary" href="#/nova">＋ Cadastrar nova cliente</a></p></div>`;
+  $$('#ctbl th[data-k]').forEach(t=>t.onclick=()=>{if(ui.sort===t.dataset.k)ui.asc=!ui.asc;else{ui.sort=t.dataset.k;ui.asc=t.dataset.k==='nome'}drawClientTable()});
+}
+
+/* ================= NOVA CLIENTE ================= */
+function dadosForm(c={}){
+  const f=(k,l,t='text',x='',ph='')=>`<div class="field ${x}"><label>${l}</label><input name="${k}" type="${t}" value="${esc(c[k])}" placeholder="${ph}"></div>`;
+  return `<form id="fDados" class="card" onsubmit="return false">
+    <div class="section-t">Dados pessoais</div>
+    <div class="grid">
+      ${f('nome','Nome completo *','text','full')}
+      ${f('profissao','Ocupação')}
+      ${f('nascimento','Data de nascimento','date')}
+      <div class="field"><label>Fone / Cel</label><input name="telefone" type="tel" value="${esc(c.telefone)}" placeholder="(81) 90000-0000"><label class="row" style="gap:6px;text-transform:none;letter-spacing:0;font-size:13px;color:var(--ink)"><input type="checkbox" name="whatsapp" value="1" ${c.whatsapp||c.whatsapp===undefined?'checked':''}> É WhatsApp</label></div>
+      ${f('rg','RG')}
+      ${f('cpf','CPF','text','','000.000.000-00')}
+      ${f('email','E-mail','email')}
+      <div class="field"><label>Como conheceu o espaço</label><select name="origem">${['','Indicação','Instagram','WhatsApp','Google','Passou na frente','Outro'].map(o=>`<option ${c.origem===o?'selected':''}>${o}</option>`).join('')}</select></div>
+      ${f('endereco','Endereço','text','full')}
+      <div class="field full"><label>Observações</label><textarea name="obs">${esc(c.obs)}</textarea></div>
+    </div>
+  </form>`;
+}
+function pNova(){
+  return `<div class="ptitle"><div><h2>Cadastrar cliente</h2><p>Passo 1 de 2 — dados pessoais. Em seguida você preenche a anamnese.</p></div></div>
+  ${dadosForm()}
+  <div class="formbar"><div class="card"><a class="btn" href="#/clientes">Cancelar</a><button class="btn primary" onclick="saveDados(true)">Salvar e ir para anamnese →</button></div></div>`;
+}
+after.nova=()=>{
+  const n=$('[name=nome]');n.focus();
+  maskInputs();
+  n.addEventListener('blur',()=>{const v=norm(n.value).trim();const dup=v&&D.clients.find(c=>norm(c.nome)===v);if(dup)toast(`Já existe uma ficha com esse nome: ${dup.nome}`)});
+};
+function maskInputs(){
+  const t=$('[name=telefone]'),c=$('[name=cpf]');
+  if(t)t.oninput=()=>{let d=t.value.replace(/\D/g,'').slice(0,11);t.value=d.length>10?`(${d.slice(0,2)}) ${d.slice(2,7)}-${d.slice(7)}`:d.length>6?`(${d.slice(0,2)}) ${d.slice(2,6)}-${d.slice(6)}`:d.length>2?`(${d.slice(0,2)}) ${d.slice(2)}`:d};
+  if(c)c.oninput=()=>{let d=c.value.replace(/\D/g,'').slice(0,11);c.value=d.replace(/(\d{3})(\d)/,'$1.$2').replace(/(\d{3})(\d)/,'$1.$2').replace(/(\d{3})(\d{1,2})$/,'$1-$2')};
+}
+
+/* ================= FICHA DA CLIENTE ================= */
+function pCliente(r){
+  const c=client(r.id);
+  if(!c)return `<div class="card empty">Cliente não encontrada. <p><a class="btn" href="#/clientes">← Voltar para clientes</a></p></div>`;
+  const ss=sessOf(c.id),ph=photosOf(c.id);
+  const tabs=[['dados','Dados'],['anamnese','Anamnese'],['evolucao','Evolução',ss.length],['fotos','Antes & Depois',ph.length]];
+  let h=`<div class="chead">
+    ${avatar(c)}
+    <div><h2>${esc(c.nome)}</h2><div class="meta">${[age(c.nascimento),c.telefone,ss[0]?'última visita '+ago(ss[0].data):'sem atendimentos'].filter(Boolean).map(esc).join(' · ')}</div></div>
+    <div class="actions">
+      <button class="btn primary sm" onclick="sessionModal(null,'${c.id}')">✎ Registrar atendimento</button>
+      ${c.telefone&&c.whatsapp!==false?`<a class="btn sm" target="_blank" href="https://wa.me/55${esc(c.telefone.replace(/\D/g,'').replace(/^55(?=\d{10,11}$)/,''))}">WhatsApp</a>`:''}
+      <button class="btn sm" onclick="printFicha('${c.id}')">🖨 Imprimir ficha</button>
+      <button class="btn sm danger" onclick="deleteClient('${c.id}')">Excluir</button>
+    </div>
+  </div>`;
+  h+=alertas(c);
+  h+=`<div class="tabs">${tabs.map(([k,l,n])=>`<a class="tab ${r.tab===k?'on':''}" href="#/cliente/${c.id}/${k}">${l}${n?`<span class="count">${n}</span>`:''}</a>`).join('')}</div>`;
+  if(r.tab==='dados')h+=dadosForm(c)+`<div class="formbar"><div class="card"><button class="btn primary" onclick="saveDados(false,'${c.id}')">Salvar dados</button></div></div>`;
+  if(r.tab==='anamnese')h+=anamneseForm(c);
+  if(r.tab==='evolucao')h+=evolucao(c,ss);
+  if(r.tab==='fotos')h+=fotosCliente(c,ph);
+  return h;
+}
+after.cliente=r=>{
+  maskInputs();
+  $$('.q input[type=radio]').forEach(x=>x.onchange=()=>x.closest('.q').classList.toggle('sim',x.value==='sim'));
+  const drop=$('#drop'),fi=$('#fileIn');
+  if(drop){
+    drop.onclick=()=>fi.click();fi.onchange=()=>addPending(fi.files,$('#pendBox'),true);
+    drop.ondragover=e=>{e.preventDefault();drop.classList.add('over')};drop.ondragleave=()=>drop.classList.remove('over');
+    drop.ondrop=e=>{e.preventDefault();drop.classList.remove('over');addPending(e.dataTransfer.files,$('#pendBox'),true)};
+  }
+};
+function alertas(c){
+  const a=c.anamnese||{};
+  const it=Object.keys(ALERTAS).filter(k=>a[k]==='sim').map(k=>`<b>${ALERTAS[k]}</b>${a[k+'_det']?': '+esc(a[k+'_det']):''}`);
+  return it.length?`<div class="alert">⚠ Atenção — ${it.join(' · ')}</div>`:'';
+}
+function yn(name,val){return `<div class="yn"><label><input type="radio" name="${name}" value="sim" ${val==='sim'?'checked':''}>Sim</label><label><input type="radio" name="${name}" value="nao" ${val==='nao'?'checked':''}>Não</label></div>`}
+function qHTML([k,t,det,sub],a){
+  return `<div class="q ${a[k]==='sim'?'sim':''}">
+    <div class="txt">${t}</div>${yn(k,a[k])}
+    ${det||sub?`<div class="det2">${det?`<input name="${k}_det" placeholder="${det}" value="${esc(a[k+'_det'])}">`:''}${sub?`<span class="sub">${sub[1]}</span>${yn(sub[0],a[sub[0]])}`:''}</div>`:''}
+  </div>`;
+}
+function chips(name,opts,val,multi){
+  const vs=multi?(val||[]):[val];
+  return `<div class="chips">${opts.map(o=>`<label class="chip"><input type="${multi?'checkbox':'radio'}" name="${name}" value="${esc(o)}" ${vs.includes(o)?'checked':''}><span>${esc(o)}</span></label>`).join('')}</div>`;
+}
+function anamneseForm(c){
+  const a=c.anamnese||{};
+  return `<form id="fAnam" class="card" onsubmit="return false">
+    <div class="section-t">Ficha de anamnese</div>
+    <p class="muted" style="margin:-4px 0 6px;font-size:13px">Marque Sim ou Não. Use os campos abaixo de cada pergunta para especificar.</p>
+    <div class="qgrid"><div>${ANAM_ESQ.map(q=>qHTML(q,a)).join('')}</div><div>${ANAM_DIR.map(q=>qHTML(q,a)).join('')}</div></div>
+    <div class="decl">
+      <label class="row" style="gap:8px;align-items:flex-start;flex-wrap:nowrap"><input type="checkbox" name="declaracao" value="1" ${a.declaracao?'checked':''} style="margin-top:3px"> <span>Declaro que as informações acima são verdadeiras, não cabendo ao profissional quaisquer responsabilidades por informações omitidas nessa avaliação.</span></label>
+      <div class="field" style="max-width:220px;margin-top:10px"><label>Data</label><input type="date" name="dataAnamnese" value="${esc(a.dataAnamnese||today())}"></div>
+    </div>
+
+    <div class="section-t">Avaliação da pele <span class="muted" style="font-size:13px;font-family:sans-serif">— preenchido pela profissional</span></div>
+    <div class="aval">
+      ${Object.entries(AVAL).map(([k,[l,o]])=>`<div class="arow"><div class="al">${l}</div>${chips(k,o,a[k])}${k==='espessura'?`<input class="mini" name="espessuraOutro" placeholder="Outra…" value="${esc(a.espessuraOutro)}">`:''}</div>`).join('')}
+    </div>
+    <div class="field" style="margin-top:14px"><label>Alterações observadas</label>${chips('lesoes',LESOES,a.lesoes,true)}</div>
+    <div class="grid" style="margin-top:14px">
+      <div class="field"><label>Outra alteração</label><input name="lesaoOutro" value="${esc(a.lesaoOutro)}"></div>
+      <div class="field"><label>Outros</label><input name="outros" value="${esc(a.outros)}"></div>
+    </div>
+    <div class="section-t">Plano de tratamento</div>
+    <div class="field"><textarea name="plano" style="min-height:110px" placeholder="Procedimentos indicados, número de sessões, frequência, cuidados em casa…">${esc(a.plano)}</textarea></div>
+  </form>
+  <div class="formbar"><div class="card"><button class="btn" onclick="printFicha('${c.id}')">🖨 Imprimir para assinar</button><button class="btn primary" onclick="saveAnamnese('${c.id}')">Salvar anamnese</button></div></div>`;
+}
+const thumb=p=>`<div class="thumb" onclick="viewPhoto('${p.id}')"><img src="${blobURL(p.blob)}" loading="lazy"><span class="tag ${p.tipo}">${p.tipo}</span></div>`;
+function evolucao(c,ss){
+  let h=`<div class="toolbar"><span class="hint">Cada atendimento: o que foi feito, produtos, parâmetros e fotos da sessão.</span><button class="btn primary" onclick="sessionModal(null,'${c.id}')">＋ Registrar atendimento</button></div>`;
+  if(!ss.length)return h+`<div class="card empty">Nenhum atendimento registrado ainda.</div>`;
+  return h+'<div class="timeline">'+ss.map((s,i)=>{
+    const ph=D.photos.filter(p=>p.sessionId===s.id).sort((a,b)=>(a.tipo==='antes'?0:1)-(b.tipo==='antes'?0:1));
+    return `<div class="sess">
+      <div class="h"><span class="dt">${fmtDate(s.data)}</span><span class="proc">${esc(s.procedimento||'Atendimento')}</span>${s.regiao?`<span class="reg">· ${esc(s.regiao)}</span>`:''}<span class="reg">· sessão ${ss.length-i}</span>
+        <span class="act"><button class="btn ghost sm" onclick="sessionModal('${s.id}')">Editar</button><button class="btn ghost sm danger" onclick="deleteSession('${s.id}')">Excluir</button></span></div>
+      ${s.detalhes?`<div class="body"><div class="lbl">Produtos / parâmetros</div>${esc(s.detalhes)}</div>`:''}
+      ${s.obs?`<div class="body"><div class="lbl">Evolução / observações</div>${esc(s.obs)}</div>`:''}
+      ${ph.length?`<div class="thumbs">${ph.map(thumb).join('')}</div>`:''}
+    </div>`}).join('')+'</div>';
+}
+function photoCard(p,showClient){
+  const i=ui.compare.indexOf(p.id);const s=p.sessionId&&D.sessions.find(x=>x.id===p.sessionId);const c=client(p.clientId);
+  return `<div class="ph ${i>=0?'sel':''}" data-id="${p.id}">
+    <div class="img"><img src="${blobURL(p.blob)}" loading="lazy"></div>
+    <span class="tag ${p.tipo}">${p.tipo}</span><span class="n">${i+1}</span>
+    <div class="cap">${showClient?`<b>${esc(c?.nome||'')}</b><br>`:''}<b>${fmtDate(p.data)}</b>${p.regiao?' · '+esc(p.regiao):''}${s?'<br>'+esc(s.procedimento||''):''}</div>
+  </div>`;
+}
+function fotosCliente(c,phs){
+  phs=[...phs].sort((a,b)=>(b.data||'').localeCompare(a.data||'')||(a.tipo==='antes'?-1:1));
+  let h=`<div class="drop" id="drop">📷 Clique ou arraste fotos aqui para adicionar (antes / depois)</div><input type="file" id="fileIn" accept="image/*" multiple hidden><div id="pendBox"></div>`;
+  if(!phs.length)return h+`<div class="card empty" style="margin-top:14px">Nenhuma foto ainda. Dica: tire sempre no mesmo ângulo, luz e distância para o antes e depois ficar comparável.</div>`;
+  h+=`<div class="toolbar" style="margin-top:16px"><span class="hint" id="cmpHint"></span><button class="btn primary" id="cmpBtn" onclick="compareModal()">Comparar antes × depois</button></div>
+  <div class="photos" id="phGrid">${phs.map(p=>photoCard(p)).join('')}</div>
+  <p class="muted" style="font-size:12px;margin-top:8px">Clique para selecionar · duplo clique para ampliar</p>`;
+  setTimeout(wirePhotoGrid);
+  return h;
+}
+function wirePhotoGrid(){
+  const g=$('#phGrid');if(!g)return;
+  const upd=()=>{
+    $$('.ph',g).forEach(el=>{const i=ui.compare.indexOf(el.dataset.id);el.classList.toggle('sel',i>=0);$('.n',el).textContent=i+1});
+    const b=$('#cmpBtn');if(b)b.disabled=ui.compare.length!==2;
+    const h=$('#cmpHint');if(h)h.textContent=ui.compare.length===2?'Pronto! Clique em comparar.':`Selecione 2 fotos para comparar (${ui.compare.length}/2).`;
+  };
+  $$('.ph',g).forEach(el=>{
+    el.onclick=()=>{const id=el.dataset.id,i=ui.compare.indexOf(id);if(i>=0)ui.compare.splice(i,1);else{ui.compare.push(id);if(ui.compare.length>2)ui.compare.shift()}upd()};
+    el.ondblclick=()=>viewPhoto(el.dataset.id);
+  });
+  upd();
+}
+
+/* ================= ATENDIMENTOS ================= */
+function pAtend(){
+  const procs=[...new Set(D.sessions.map(s=>s.procedimento).filter(Boolean))].sort();
+  return `<div class="ptitle"><div><h2>Atendimentos</h2><p>Todos os procedimentos realizados no espaço</p></div><div class="act"><button class="btn primary" onclick="sessionModal()">＋ Registrar atendimento</button></div></div>
+  <div class="filters">
+    <input type="search" id="aq" placeholder="Filtrar por cliente…" value="${esc(ui.aQ)}">
+    <select id="aper">${[['hoje','Hoje'],['semana','Últimos 7 dias'],['mes','Este mês'],['30','Últimos 30 dias'],['ano','Este ano'],['tudo','Todo o período']].map(([v,l])=>`<option value="${v}" ${ui.aPer===v?'selected':''}>${l}</option>`).join('')}</select>
+    <select id="aproc"><option value="">Todos os procedimentos</option>${procs.map(p=>`<option ${ui.aProc===p?'selected':''}>${esc(p)}</option>`).join('')}</select>
+    <span class="muted" id="acount"></span>
+  </div><div id="atbl"></div>`;
+}
+after.atendimentos=()=>{
+  $('#aq').oninput=e=>{ui.aQ=e.target.value;drawAtend()};
+  $('#aper').onchange=e=>{ui.aPer=e.target.value;drawAtend()};
+  $('#aproc').onchange=e=>{ui.aProc=e.target.value;drawAtend()};
+  drawAtend();
+};
+function drawAtend(){
+  const t=today();
+  const ini={hoje:t,semana:new Date(Date.now()-6*864e5).toISOString().slice(0,10),mes:t.slice(0,7)+'-01','30':new Date(Date.now()-29*864e5).toISOString().slice(0,10),ano:t.slice(0,4)+'-01-01',tudo:''}[ui.aPer];
+  const q=norm(ui.aQ).trim();
+  const rows=D.sessions.filter(s=>(s.data||'')>=ini&&(!ui.aProc||s.procedimento===ui.aProc)&&(!q||norm(client(s.clientId)?.nome).includes(q)))
+    .sort((a,b)=>(b.data||'').localeCompare(a.data||'')||(b.criado||0)-(a.criado||0));
+  $('#acount').textContent=plural(rows.length,'atendimento','atendimentos');
+  $('#atbl').innerHTML=rows.length?`<table class="tbl"><thead><tr><th>Data</th><th>Cliente</th><th>Procedimento</th><th class="hide-m">Região</th><th class="hide-m">Fotos</th></tr></thead><tbody>
+    ${rows.map(s=>{const c=client(s.clientId);if(!c)return'';const n=D.photos.filter(p=>p.sessionId===s.id).length;
+      return `<tr onclick="go('#/cliente/${c.id}/evolucao')"><td>${fmtDate(s.data)}</td><td><div class="who">${avatar(c)}<b style="font-weight:600">${esc(c.nome)}</b></div></td><td>${esc(s.procedimento||'—')}</td><td class="hide-m">${esc(s.regiao||'—')}</td><td class="hide-m">${n?'📷 '+n:'<span class="muted">—</span>'}</td></tr>`}).join('')}
+  </tbody></table>`:`<div class="card empty">Nenhum atendimento neste filtro.</div>`;
+}
+
+/* ================= GALERIA ================= */
+function pGaleria(){
+  return `<div class="ptitle"><div><h2>Antes & Depois</h2><p>Todas as fotos registradas. Para comparar, abra a galeria da cliente.</p></div></div>
+  ${D.photos.length?`<div class="filters"><input type="search" id="gfq" placeholder="Filtrar por cliente ou região…" value="${esc(ui.gQ)}"><select id="gft"><option value="">Antes e depois</option><option value="antes">Só antes</option><option value="depois">Só depois</option></select><span class="muted" id="gcount"></span></div><div class="photos" id="gal"></div>`
+  :`<div class="card empty"><h2>Nenhuma foto ainda</h2><p>As fotos são adicionadas ao registrar um atendimento ou na aba "Antes & Depois" da cliente.</p></div>`}`;
+}
+after.galeria=()=>{
+  const q=$('#gfq');if(!q)return;const t=$('#gft');
+  const draw=()=>{
+    ui.gQ=q.value;const n=norm(q.value).trim();
+    const list=D.photos.filter(p=>(!t.value||p.tipo===t.value)&&(!n||norm(client(p.clientId)?.nome).includes(n)||norm(p.regiao).includes(n))).sort((a,b)=>(b.data||'').localeCompare(a.data||''));
+    $('#gcount').textContent=plural(list.length,'foto','fotos');
+    $('#gal').innerHTML=list.map(p=>photoCard(p,true)).join('');
+    $$('#gal .ph').forEach(el=>el.onclick=()=>{const p=D.photos.find(x=>x.id===el.dataset.id);ui.compare=[];go(`#/cliente/${p.clientId}/fotos`)});
+  };
+  q.oninput=draw;t.onchange=draw;draw();
+};
+
+/* ================= PROCEDIMENTOS ================= */
+function pProc(){
+  const cont={};D.sessions.forEach(s=>cont[s.procedimento]=(cont[s.procedimento]||0)+1);
+  const byCat={};[...D.procedures].sort((a,b)=>norm(a.nome).localeCompare(norm(b.nome))).forEach(p=>(byCat[p.categoria||'Outros']=byCat[p.categoria||'Outros']||[]).push(p));
+  return `<div class="ptitle"><div><h2>Procedimentos</h2><p>Lista dos serviços do espaço. Eles aparecem como sugestão ao registrar um atendimento.</p></div><div class="act"><button class="btn primary" onclick="procModal()">＋ Novo procedimento</button></div></div>
+  ${D.procedures.length?`<div class="dash" style="grid-template-columns:repeat(auto-fill,minmax(320px,1fr))">${CATEGORIAS.filter(k=>byCat[k]).concat(Object.keys(byCat).filter(k=>!CATEGORIAS.includes(k))).map(cat=>`<div class="card proc-list"><h3>${esc(cat)}</h3>
+    ${byCat[cat].map(p=>`<div class="li"><div class="t"><b>${esc(p.nome)}</b><small>${p.descricao?esc(p.descricao)+' · ':''}${plural(cont[p.nome]||0,'atendimento','atendimentos')}</small></div><button class="btn ghost sm" onclick="procModal('${p.id}')">Editar</button></div>`).join('')}
+  </div>`).join('')}</div>`:`<div class="card empty">Nenhum procedimento cadastrado.</div>`}`;
+}
+function procModal(id){
+  const p=id?D.procedures.find(x=>x.id===id):{categoria:'Facial'};
+  const m=modal(`<h3>${id?'Editar procedimento':'Novo procedimento'}</h3>
+    <form id="fProc" class="grid" onsubmit="return false">
+      <div class="field full"><label>Nome *</label><input name="nome" value="${esc(p.nome)}" placeholder="Ex: Limpeza de pele profunda"></div>
+      <div class="field"><label>Categoria</label><select name="categoria">${CATEGORIAS.map(c=>`<option ${p.categoria===c?'selected':''}>${c}</option>`).join('')}</select></div>
+      <div class="field"><label>Duração média</label><input name="duracao" value="${esc(p.duracao)}" placeholder="Ex: 1h"></div>
+      <div class="field full"><label>Descrição / observações</label><textarea name="descricao" style="min-height:60px">${esc(p.descricao)}</textarea></div>
+    </form>
+    <div class="mbar">${id?`<button class="btn danger" style="margin-right:auto" onclick="delProc('${id}')">Excluir</button>`:''}<button class="btn" onclick="closeModal()">Cancelar</button><button class="btn primary" id="pSave">Salvar</button></div>`);
+  $('[name=nome]',m).focus();
+  $('#pSave',m).onclick=async()=>{
+    const d=Object.fromEntries(new FormData($('#fProc')));
+    if(!d.nome.trim())return toast('Informe o nome do procedimento');
+    await DB.put('procedures',{...p,...d,nome:d.nome.trim(),id:p.id||uid()});await load();closeModal();render();toast('Procedimento salvo ✓');
+  };
+}
+async function delProc(id){if(!confirm('Excluir este procedimento da lista? Os atendimentos já registrados não são apagados.'))return;await DB.del('procedures',id);await load();closeModal();render()}
+
+/* ================= AJUSTES / BACKUP ================= */
+function pAjustes(){
+  const s=settings(),last=LS.get('fe-lastbackup',0);
+  return `<div class="ptitle"><div><h2>Backup e ajustes</h2><p>Configurações do sistema e cópia de segurança dos dados</p></div></div>
+  <div class="dash">
+    <div class="col">
+      <div class="card"><h3>Dados do espaço</h3>
+        <div class="grid">
+          <div class="field full"><label>Nome do espaço</label><input id="sNome" value="${esc(s.nome)}"></div>
+          <div class="field full"><label>Senha de acesso (opcional, 4 a 8 números)</label><input id="sPin" type="password" inputmode="numeric" placeholder="Deixe vazio para não pedir senha" value="${esc(s.pin)}"></div>
+        </div>
+        <div class="row" style="justify-content:flex-end;margin-top:14px"><button class="btn primary" onclick="saveSettings()">Salvar ajustes</button></div>
+      </div>
+    </div>
+    <div class="col">
+      <div class="card"><h3>💾 Cópia de segurança</h3>
+        <p class="muted" style="font-size:14px;margin-top:0">Nesta versão os dados ficam <b>neste computador</b>. Baixe um backup com frequência e guarde fora dele (pen drive, Google Drive).</p>
+        <p style="font-size:14px">Último backup: <b>${last?new Date(last).toLocaleString('pt-BR'):'nunca'}</b></p>
+        <div class="row"><button class="btn primary" onclick="exportBackup()">⇩ Baixar backup completo</button><button class="btn" onclick="$('#impIn').click()">⇧ Restaurar backup</button><input type="file" id="impIn" accept=".json" hidden></div>
+        <p class="muted" style="font-size:13px" id="usage">${D.clients.length} clientes · ${D.sessions.length} atendimentos · ${D.photos.length} fotos</p>
+      </div>
+      <div class="card"><h3>⇩ Exportar</h3>
+        <p class="muted" style="font-size:14px;margin-top:0">Lista de clientes em planilha (abre no Excel). Para a ficha completa de uma cliente, use “Imprimir ficha” e escolha “Salvar como PDF”.</p>
+        <button class="btn" onclick="exportCSV()">Baixar lista de clientes (.csv)</button>
+      </div>
+    </div>
+  </div>`;
+}
+after.ajustes=async()=>{
+  $('#impIn').onchange=e=>e.target.files[0]&&importBackup(e.target.files[0]);
+  try{const e=await navigator.storage.estimate();$('#usage').textContent+=` · ${(e.usage/1048576).toFixed(1)} MB usados`}catch{}
+};
+function saveSettings(){
+  const pin=$('#sPin').value.trim();
+  if(pin&&!/^\d{4,8}$/.test(pin))return toast('A senha deve ter de 4 a 8 números');
+  LS.set('fe-settings',{...settings(),nome:$('#sNome').value.trim()||'Espaço de Estética',pin});render();toast('Ajustes salvos ✓');
+}
+
+/* ================= AÇÕES: clientes ================= */
+async function saveDados(isNew,id){
+  const f=$('#fDados');const d=Object.fromEntries(new FormData(f));
+  if(!d.nome.trim()){toast('Informe o nome da cliente');f.nome.focus();return}
+  const c=isNew?{id:uid(),criado:Date.now(),anamnese:{}}:client(id);
+  Object.assign(c,d,{nome:d.nome.trim(),whatsapp:!!d.whatsapp,atualizado:Date.now()});
+  await DB.put('clients',c);await load();toast('Dados salvos ✓');
+  if(isNew)go(`#/cliente/${c.id}/anamnese`);else render();
+}
+async function saveAnamnese(id){
+  const fd=new FormData($('#fAnam'));const d=Object.fromEntries(fd);d.lesoes=fd.getAll('lesoes');d.declaracao=!!d.declaracao;
+  const c=client(id);c.anamnese=d;c.atualizado=Date.now();
+  await DB.put('clients',c);await load();toast('Anamnese salva ✓');render();
+}
+async function deleteClient(id){
+  const c=client(id);
+  if(!confirm(`Excluir a ficha de ${c.nome}?\n\nIsso apaga dados, anamnese, atendimentos e fotos. Não dá para desfazer.`))return;
+  for(const s of D.sessions.filter(x=>x.clientId===id))await DB.del('sessions',s.id);
+  for(const p of photosOf(id))await DB.del('photos',p.id);
+  await DB.del('clients',id);await load();toast('Ficha excluída');go('#/clientes');
+}
+
+/* ================= fotos pendentes ================= */
+let pending=[];
+async function addPending(files,box,standalone){
+  for(const f of files){if(!f.type.startsWith('image/'))continue;const blob=await compress(f);
+    pending.push({id:uid(),blob,tipo:pending.some(p=>p.tipo==='antes')?'depois':'antes',data:today(),regiao:''})}
+  drawPending(box,standalone);
+}
+function drawPending(box,standalone){
+  if(!box)return;if(!pending.length){box.innerHTML='';return}
+  box.innerHTML=`<div class="pending">${pending.map(p=>`<div class="pend" data-id="${p.id}"><img src="${blobURL(p.blob)}"><div class="ctr">
+      <select data-f="tipo">${['antes','depois','outro'].map(t=>`<option value="${t}" ${p.tipo===t?'selected':''}>${t[0].toUpperCase()+t.slice(1)}</option>`).join('')}</select>
+      ${standalone?`<input type="date" data-f="data" value="${p.data}">`:''}
+      <input data-f="regiao" placeholder="Região (ex: rosto)" value="${esc(p.regiao)}">
+      <button class="btn ghost sm danger" type="button" data-rm>Remover</button></div></div>`).join('')}</div>
+    ${standalone?`<div class="row" style="justify-content:flex-end;margin-top:10px"><button class="btn" id="pCancel">Cancelar</button><button class="btn primary" id="pSave">Salvar ${plural(pending.length,'foto','fotos')}</button></div>`:''}`;
+  $$('.pend',box).forEach(el=>{const p=pending.find(x=>x.id===el.dataset.id);
+    $$('[data-f]',el).forEach(i=>i.onchange=()=>p[i.dataset.f]=i.value);
+    $('[data-rm]',el).onclick=()=>{pending=pending.filter(x=>x!==p);drawPending(box,standalone)}});
+  if(standalone){$('#pCancel',box).onclick=()=>{pending=[];drawPending(box,true)};$('#pSave',box).onclick=()=>savePending(route().id)}
+}
+async function savePending(clientId,sessionId,data){
+  for(const p of pending)await DB.put('photos',{id:p.id,clientId,sessionId:sessionId||null,tipo:p.tipo,data:data||p.data,regiao:p.regiao,blob:p.blob,criado:Date.now()});
+  const n=pending.length;pending=[];await load();render();if(n)toast(`${plural(n,'foto salva','fotos salvas')} ✓`);
+}
+
+/* ================= modais ================= */
+function modal(html,cls=''){
+  const bg=document.createElement('div');bg.className='modal-bg';bg.innerHTML=`<div class="modal ${cls}">${html}</div>`;
+  bg.onmousedown=e=>{if(e.target===bg)closeModal()};document.body.appendChild(bg);return bg;
+}
+function closeModal(){$$('.modal-bg').forEach(m=>m.remove());pending=[]}
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&$('.modal-bg'))closeModal()});
+
+function sessionModal(id,clientId){
+  const s=id?D.sessions.find(x=>x.id===id):{data:today(),clientId:clientId||(route().page==='cliente'?route().id:'')};
+  const c=client(s.clientId);
+  const existing=id?D.photos.filter(p=>p.sessionId===id):[];
+  const sug=[...new Set([...D.procedures.map(p=>p.nome),...D.sessions.map(x=>x.procedimento)].filter(Boolean))].sort();
+  pending=[];
+  const m=modal(`<h3>${id?'Editar atendimento':'Registrar atendimento'}</h3>
+    <form id="fSess" class="grid" onsubmit="return false">
+      <div class="field full picker"><label>Cliente *</label>
+        <input id="pickQ" placeholder="Digite o nome da cliente…" value="${esc(c?.nome||'')}" autocomplete="off" ${id?'disabled':''}>
+        <input type="hidden" name="clientId" value="${esc(s.clientId||'')}"><div class="opts" id="pickO"></div></div>
+      <div class="field"><label>Data</label><input type="date" name="data" value="${esc(s.data)}"></div>
+      <div class="field"><label>Procedimento</label><input name="procedimento" list="procs" value="${esc(s.procedimento)}" placeholder="Escolha ou digite"><datalist id="procs">${sug.map(p=>`<option>${esc(p)}</option>`).join('')}</datalist></div>
+      <div class="field full"><label>Região tratada</label><input name="regiao" value="${esc(s.regiao)}" placeholder="Ex: rosto, abdômen, glúteos"></div>
+      <div class="field full"><label>Produtos / parâmetros usados</label><textarea name="detalhes" style="min-height:60px" placeholder="Ex: ácido mandélico 10%, máscara de argila, LED azul 15 min">${esc(s.detalhes)}</textarea></div>
+      <div class="field full"><label>Evolução / observações</label><textarea name="obs" placeholder="Como a cliente respondeu, o que melhorou, orientações passadas…">${esc(s.obs)}</textarea></div>
+    </form>
+    ${existing.length?`<div class="section-t" style="font-size:15px">Fotos deste atendimento</div><div class="thumbs">${existing.map(p=>`<div class="thumb"><img src="${blobURL(p.blob)}"><span class="tag ${p.tipo}">${p.tipo}</span></div>`).join('')}</div>`:''}
+    <div class="section-t" style="font-size:15px">Adicionar fotos</div>
+    <div class="drop" id="mdrop">📷 Clique ou arraste as fotos do antes e do depois</div><input type="file" id="mfile" accept="image/*" multiple hidden><div id="mpend"></div>
+    <div class="mbar"><button class="btn" onclick="closeModal()">Cancelar</button><button class="btn primary" id="sSave">Salvar atendimento</button></div>`);
+  // seletor de cliente
+  const pq=$('#pickQ',m),po=$('#pickO',m),hid=$('[name=clientId]',m);
+  const drawOpts=()=>{const l=searchClients(pq.value).sort((a,b)=>norm(a.nome).localeCompare(norm(b.nome))).slice(0,8);
+    po.innerHTML=l.map(x=>`<div data-id="${x.id}">${esc(x.nome)} <span class="muted" style="font-size:12px">${esc(x.telefone||'')}</span></div>`).join('')||`<div data-new>＋ Cadastrar “${esc(pq.value)}” como nova cliente</div>`;
+    po.classList.add('on');
+    $$('div',po).forEach(o=>o.onmousedown=e=>{e.preventDefault();
+      if(o.dataset.new!==undefined){closeModal();go('#/nova');setTimeout(()=>{const n=$('[name=nome]');if(n)n.value=pq.value},50);return}
+      hid.value=o.dataset.id;pq.value=client(o.dataset.id).nome;po.classList.remove('on')})};
+  pq.oninput=()=>{hid.value='';drawOpts()};pq.onfocus=drawOpts;pq.onblur=()=>setTimeout(()=>po.classList.remove('on'),120);
+  if(!s.clientId)setTimeout(()=>pq.focus(),30);else setTimeout(()=>$('[name=procedimento]',m).focus(),30);
+  const d=$('#mdrop',m),fi=$('#mfile',m);
+  d.onclick=()=>fi.click();fi.onchange=()=>addPending(fi.files,$('#mpend'),false);
+  d.ondragover=e=>{e.preventDefault();d.classList.add('over')};d.ondragleave=()=>d.classList.remove('over');
+  d.ondrop=e=>{e.preventDefault();d.classList.remove('over');addPending(e.dataTransfer.files,$('#mpend'),false)};
+  $('#sSave',m).onclick=()=>saveSession(id);
+}
+async function saveSession(id){
+  const d=Object.fromEntries(new FormData($('#fSess')));
+  if(!d.clientId)return toast('Escolha a cliente na lista');
+  const s=id?D.sessions.find(x=>x.id===id):{id:uid(),criado:Date.now()};
+  Object.assign(s,d);await DB.put('sessions',s);
+  for(const p of D.photos.filter(p=>p.sessionId===s.id)){p.data=s.data;await DB.put('photos',p)}
+  if(s.procedimento&&!D.procedures.some(p=>norm(p.nome)===norm(s.procedimento)))await DB.put('procedures',{id:uid(),nome:s.procedimento,categoria:'Outros'});
+  const keep=pending;$$('.modal-bg').forEach(x=>x.remove());pending=keep;
+  const r=route();
+  await savePending(s.clientId,s.id,s.data);
+  toast('Atendimento salvo ✓');
+  if(!(r.page==='cliente'&&r.id===s.clientId)&&r.page!=='atendimentos'&&r.page!=='painel')go(`#/cliente/${s.clientId}/evolucao`);
+}
+async function deleteSession(id){
+  const n=D.photos.filter(p=>p.sessionId===id).length;
+  if(!confirm('Excluir este atendimento'+(n?` e as ${n} foto(s) dele`:'')+'?'))return;
+  for(const p of D.photos.filter(p=>p.sessionId===id))await DB.del('photos',p.id);
+  await DB.del('sessions',id);await load();render();toast('Atendimento excluído');
+}
+function viewPhoto(id){
+  const p=D.photos.find(x=>x.id===id);const s=p.sessionId&&D.sessions.find(x=>x.id===p.sessionId);
+  modal(`<div class="viewer"><img src="${blobURL(p.blob)}"></div>
+    <div class="row" style="margin-top:12px"><span class="tag ${p.tipo}" style="position:static">${p.tipo}</span>
+      <span>${fmtDate(p.data)}${p.regiao?' · '+esc(p.regiao):''}${s?' · '+esc(s.procedimento||''):''}</span><span style="flex:1"></span>
+      <button class="btn sm" onclick="downloadPhoto('${p.id}')">Baixar</button><button class="btn sm danger" onclick="deletePhoto('${p.id}')">Excluir foto</button><button class="btn sm" onclick="closeModal()">Fechar</button></div>`,'wide');
+}
+function downloadPhoto(id){const p=D.photos.find(x=>x.id===id),c=client(p.clientId);dl(p.blob,`${(c?.nome||'foto').replace(/\s+/g,'_')}_${p.tipo}_${p.data}.jpg`)}
+async function deletePhoto(id){if(!confirm('Excluir esta foto?'))return;await DB.del('photos',id);ui.compare=ui.compare.filter(x=>x!==id);closeModal();await load();render();toast('Foto excluída')}
+function compareModal(){
+  if(ui.compare.length!==2)return;
+  let [a,b]=ui.compare.map(id=>D.photos.find(p=>p.id===id));
+  if((a.data||'')>(b.data||''))[a,b]=[b,a];
+  const ua=blobURL(a.blob),ub=blobURL(b.blob);
+  const cap=p=>`<b style="text-transform:capitalize">${p.tipo}</b> · ${fmtDate(p.data)}${p.regiao?' · '+esc(p.regiao):''}`;
+  const m=modal(`<div class="row" style="margin-bottom:12px"><h3 style="margin:0;flex:1">Antes × Depois</h3><button class="btn sm" id="mSide">Lado a lado</button><button class="btn sm" id="mSlide">Deslizar</button><button class="btn sm" onclick="closeModal()">Fechar</button></div><div id="cmpBody"></div>`,'wide');
+  const body=$('#cmpBody',m);
+  const side=()=>{body.innerHTML=`<div class="cmp"><figure><img src="${ua}"><figcaption>${cap(a)}</figcaption></figure><figure><img src="${ub}"><figcaption>${cap(b)}</figcaption></figure></div>`};
+  const slide=()=>{
+    body.innerHTML=`<div class="slider" id="sl"><img src="${ub}"><div class="top-img"><img src="${ua}"></div><div class="bar"></div><span class="lb" style="left:10px">${fmtDate(a.data)}</span><span class="lb" style="right:10px">${fmtDate(b.data)}</span></div>`;
+    const sl=$('#sl'),top=$('.top-img',sl),bar=$('.bar',sl);
+    const set=x=>{const r=sl.getBoundingClientRect();const pc=Math.max(0,Math.min(100,(x-r.left)/r.width*100));top.style.clipPath=`inset(0 ${100-pc}% 0 0)`;bar.style.left=`calc(${pc}% - 1.5px)`};
+    let drag=false;sl.onpointerdown=e=>{drag=true;sl.setPointerCapture(e.pointerId);set(e.clientX)};sl.onpointermove=e=>{if(drag)set(e.clientX)};sl.onpointerup=()=>drag=false;
+    const mid=()=>{const r=sl.getBoundingClientRect();set(r.left+r.width/2)};mid();$('img',sl).onload=mid;
+  };
+  $('#mSide',m).onclick=side;$('#mSlide',m).onclick=slide;side();
+}
+
+/* ================= impressão ================= */
+function printFicha(id){
+  const c=client(id),a=c.anamnese||{},s=settings();
+  const box=v=>v?'☒':'☐';
+  const ynp=(k)=>`${box(a[k]==='sim')} Sim ${box(a[k]==='nao')} Não`;
+  const q=([k,t,det,sub])=>`<tr><td class="k">${t}</td><td>${ynp(k)}${sub?` &nbsp; ${sub[1]} ${ynp(sub[0])}`:''}${det?`<br><small>${det}: ${esc(a[k+'_det'])||'_______________'}</small>`:''}</td></tr>`;
+  const ch=(k,o)=>o.map(x=>`${box(a[k]===x)} ${x}`).join(' &nbsp; ');
+  const ss=sessOf(id).reverse();
+  $('#print').innerHTML=`<h1>${esc(s.nome)}</h1><div>Ficha de anamnese</div>
+    <h2>Dados pessoais</h2><table>
+      <tr><td class="k">Nome</td><td>${esc(c.nome)}</td></tr>
+      <tr><td class="k">Ocupação</td><td>${esc(c.profissao)}</td></tr>
+      <tr><td class="k">Data de nascimento</td><td>${fmtDate(c.nascimento)}${c.nascimento?' ('+age(c.nascimento)+')':''}</td></tr>
+      <tr><td class="k">Endereço</td><td>${esc(c.endereco)}</td></tr>
+      <tr><td class="k">Fone/Cel</td><td>${esc(c.telefone)} &nbsp; É WhatsApp? ${box(c.whatsapp)}</td></tr>
+      <tr><td class="k">RG / CPF</td><td>${esc(c.rg)||'—'} / ${esc(c.cpf)||'—'}</td></tr>
+    </table>
+    <h2>Anamnese</h2><div class="cols"><table>${ANAM_ESQ.map(q).join('')}</table><table>${ANAM_DIR.map(q).join('')}</table></div>
+    <p style="margin-top:12px"><i>Declaro que as informações acima são verdadeiras, não cabendo ao profissional quaisquer responsabilidades por informações omitidas nessa avaliação.</i></p>
+    <div class="sig"><div>Data: ${fmtDate(a.dataAnamnese)||'____/____/______'}</div><div>Assinatura da cliente</div></div>
+    <h2>Avaliação da pele</h2><table>
+      ${Object.entries(AVAL).map(([k,[l,o]])=>`<tr><td class="k">${l}</td><td>${ch(k,o)}${k==='espessura'&&a.espessuraOutro?' &nbsp; '+esc(a.espessuraOutro):''}</td></tr>`).join('')}
+      <tr><td class="k">Alterações</td><td>${LESOES.map(x=>`${box((a.lesoes||[]).includes(x))} ${x}`).join(' &nbsp; ')}${a.lesaoOutro?' &nbsp; ☒ '+esc(a.lesaoOutro):''}</td></tr>
+      <tr><td class="k">Outros</td><td>${esc(a.outros)}</td></tr>
+    </table>
+    <h2>Plano de tratamento</h2><div style="min-height:60px;white-space:pre-wrap">${esc(a.plano)}</div>
+    ${ss.length?`<h2>Atendimentos realizados</h2><table>${ss.map(x=>`<tr><td class="k">${fmtDate(x.data)} — ${esc(x.procedimento||'')}</td><td>${esc([x.regiao,x.detalhes,x.obs].filter(Boolean).join(' · '))}</td></tr>`).join('')}</table>`:''}`;
+  window.print();
+}
+
+/* ================= backup / exportação ================= */
+function dl(blob,name){const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();a.remove()}
+const toData=b=>new Promise(r=>{const f=new FileReader();f.onload=()=>r(f.result);f.readAsDataURL(b)});
+async function exportBackup(){
+  toast('Gerando backup…');
+  const photos=[];for(const p of D.photos)photos.push({...p,blob:await toData(p.blob)});
+  const data={app:'fichas-estetica',versao:2,gerado:new Date().toISOString(),settings:{nome:settings().nome},...D,photos};
+  dl(new Blob([JSON.stringify(data)],{type:'application/json'}),`backup-fichas-${today()}.json`);
+  LS.set('fe-lastbackup',Date.now());render();toast('Backup baixado ✓ Guarde fora do computador.');
+}
+async function importBackup(file){
+  try{
+    const data=JSON.parse(await file.text());if(data.app!=='fichas-estetica')throw new Error('arquivo inválido');
+    if(!confirm(`Restaurar backup de ${new Date(data.gerado).toLocaleString('pt-BR')}?\n${data.clients.length} clientes, ${data.sessions.length} atendimentos, ${data.photos.length} fotos.\n\nFichas iguais serão substituídas pela versão do backup.`))return;
+    for(const x of data.clients)await DB.put('clients',x);
+    for(const x of data.sessions)await DB.put('sessions',x);
+    for(const x of data.procedures||[])await DB.put('procedures',x);
+    for(const p of data.photos)await DB.put('photos',{...p,blob:await (await fetch(p.blob)).blob()});
+    if(data.settings?.nome)LS.set('fe-settings',{...settings(),nome:data.settings.nome});
+    await load();go('#/painel');toast('Backup restaurado ✓');
+  }catch(e){alert('Não foi possível ler o backup: '+e.message)}
+}
+function exportCSV(){
+  const cols=[['nome','Nome'],['nascimento','Nascimento'],['telefone','Telefone'],['cpf','CPF'],['email','E-mail'],['profissao','Profissão'],['endereco','Endereço'],['origem','Como conheceu']];
+  const q=v=>`"${String(v??'').replace(/"/g,'""')}"`;
+  const lines=[cols.map(c=>c[1]).concat(['Atendimentos','Última visita']).join(';'),
+    ...[...D.clients].sort((a,b)=>norm(a.nome).localeCompare(norm(b.nome))).map(c=>{const ss=sessOf(c.id);return cols.map(([k])=>q(k==='nascimento'?fmtDate(c[k]):c[k])).concat([ss.length,q(fmtDate(ss[0]?.data))]).join(';')})];
+  dl(new Blob(['﻿'+lines.join('\r\n')],{type:'text/csv;charset=utf-8'}),`clientes-${today()}.csv`);
+}
+
+
+/* ================= dados de exemplo (versão de teste) ================= */
+async function loadDemo(){
+  const nomes=['Maria José da Silva','Ana Paula Ferreira','Juliana Costa','Carla Mendes','Fernanda Lima','Patrícia Rocha','Renata Alves','Beatriz Souza'];
+  const procs=['Limpeza de pele','Drenagem linfática','Microagulhamento','Peeling químico','Radiofrequência'];
+  const img=(c1,c2)=>new Promise(r=>{const cv=document.createElement('canvas');cv.width=600;cv.height=800;const x=cv.getContext('2d');const g=x.createLinearGradient(0,0,0,800);g.addColorStop(0,c1);g.addColorStop(1,c2);x.fillStyle=g;x.fillRect(0,0,600,800);x.fillStyle='rgba(255,255,255,.55)';x.font='bold 48px sans-serif';x.textAlign='center';x.fillText('FOTO DE EXEMPLO',300,400);cv.toBlob(r,'image/jpeg',.8)});
+  const dt=n=>new Date(Date.now()-n*864e5).toISOString().slice(0,10);
+  for(let i=0;i<nomes.length;i++){
+    const id='demo_c'+i, mm=String(i===2?new Date().getMonth()+1:(i%12)+1).padStart(2,'0');
+    await DB.put('clients',{id,demo:true,nome:nomes[i],telefone:`(81) 9${8000+i}-12${10+i}`,whatsapp:true,profissao:['Professora','Advogada','Enfermeira','Autônoma'][i%4],nascimento:`${1985+i}-${mm}-${String(10+i).padStart(2,'0')}`,criado:Date.now()-i*20*864e5,
+      anamnese:i%3===0?{alergia:'sim',alergia_det:'Dipirona',gestante:'nao',sol:'sim',filtro:'sim',oleosidade:'Lipídica',fototipo:'III',lesoes:['Comedão','Rugas'],declaracao:true,dataAnamnese:dt(i*20),plano:'6 sessões de limpeza de pele + peeling'}:{}});
+    for(let k=0;k<(i%4)+1;k++){
+      const sid=`demo_s${i}_${k}`, d=dt(k*9+i*11);
+      await DB.put('sessions',{id:sid,demo:true,clientId:id,data:d,procedimento:procs[(i+k)%5],regiao:'Rosto',detalhes:'Produtos de exemplo',obs:'Boa resposta ao procedimento.',criado:Date.now()});
+      if(k===0){await DB.put('photos',{id:`demo_p${i}a`,demo:true,clientId:id,sessionId:sid,tipo:'antes',data:d,regiao:'Rosto',blob:await img('#c99a88','#e6c3b4')});
+                await DB.put('photos',{id:`demo_p${i}b`,demo:true,clientId:id,sessionId:sid,tipo:'depois',data:d,regiao:'Rosto',blob:await img('#e9cfc3','#f7ebe5')});}
+    }
+  }
+  await load();go('#/painel');render();toast('Exemplos carregados ✓');
+}
+async function clearDemo(){
+  if(!confirm('Apagar todos os dados de exemplo? As fichas cadastradas por você continuam.'))return;
+  for(const st of ['clients','sessions','photos'])for(const x of D[st].filter(x=>x.demo))await DB.del(st,x.id);
+  await load();render();toast('Exemplos apagados');
+}
+
+/* ================= senha ================= */
+function lockScreen(){
+  return new Promise(res=>{
+    const s=settings();if(!s.pin)return res();
+    $('#root').innerHTML=`<div class="lock"><div class="card"><div class="logo" style="margin:0 auto 10px">${esc(initials(s.nome).slice(0,1))}</div><h2>${esc(s.nome)}</h2><input id="pin" type="password" inputmode="numeric" placeholder="••••"><button class="btn primary" style="width:100%;justify-content:center" id="pinOk">Entrar</button><p class="muted" id="pinMsg" style="font-size:13px"></p></div></div>`;
+    const ok=()=>{if($('#pin').value===s.pin)res();else{$('#pinMsg').textContent='Senha incorreta';$('#pin').value=''}};
+    $('#pinOk').onclick=ok;$('#pin').onkeydown=e=>e.key==='Enter'&&ok();$('#pin').focus();
+  });
+}
+
+/* ================= início ================= */
+(async()=>{
+  try{await openDB()}catch(e){document.body.innerHTML='<p style="padding:40px">Este navegador bloqueou o armazenamento. Abra no Google Chrome ou Microsoft Edge.</p>';return}
+  try{navigator.storage?.persist?.()}catch{}
+  await lockScreen();await load();
+  if(!LS.get('fe-seeded',false)&&!D.procedures.length){for(const [nome,categoria] of PROC_PADRAO)await DB.put('procedures',{id:uid(),nome,categoria});LS.set('fe-seeded',true);await load()}
+  render();
+})();
+</script>
+</body>
+</html>
