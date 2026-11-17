@@ -196,6 +196,35 @@ input:focus,select:focus,textarea:focus{outline:2px solid var(--rose-l);border-c
 .pend .ctr{padding:6px;display:flex;flex-direction:column;gap:4px}
 .pend select,.pend input{width:100%;padding:4px 6px;border:1px solid var(--line);border-radius:6px;font-size:12px}
 .proc-list .li{cursor:default}
+.agenda{display:grid;grid-template-columns:1.5fr 1fr;gap:16px;align-items:start}
+.cal .calh{display:flex;align-items:center;gap:6px;margin-bottom:10px}
+.cal .calh h3{margin:0;min-width:170px;text-align:center}
+.cal .dow,.cal .days{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+.cal .dow span{font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);text-align:center;padding:4px 0}
+.cal .day{min-height:92px;border:1px solid var(--line);background:#fff;border-radius:10px;padding:6px;text-align:left;display:flex;flex-direction:column;gap:3px;position:relative;font:inherit;color:inherit;overflow:hidden}
+.cal .day:hover{border-color:var(--rose)}
+.cal .day.out{background:#fbf8f5;color:#bcb1aa}
+.cal .day .n{font-size:13px;font-weight:600}
+.cal .day.today .n{background:var(--rose);color:#fff;border-radius:50%;width:24px;height:24px;display:grid;place-items:center}
+.cal .day.sel{border:2px solid var(--rose);padding:5px;background:var(--rose-l)}
+.cal .day .cnt{display:none;position:absolute;right:6px;top:6px;background:var(--rose);color:#fff;border-radius:10px;font-size:11px;padding:0 6px;font-weight:600}
+.cal .ev{display:block;font-size:11px;background:var(--rose-l);color:var(--rose-d);border-radius:5px;padding:1px 5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cal .day.sel .ev{background:#fff}
+.cal .ev.realizado{background:var(--sage-l);color:#4d6153}
+.cal .ev.faltou{background:#fff3df;color:#8a6420}
+.cal .more{font-size:11px;color:var(--muted)}
+.sub-t{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin:14px 0 4px}
+.li .hr,.appt .hr{font-weight:600;font-size:14px;width:48px;flex:none;color:var(--rose-d)}
+.appt{display:flex;gap:12px;padding:12px 4px;border-bottom:1px solid var(--line)}
+.appt:last-child{border-bottom:none}
+.appt .hr small{display:block;font-weight:normal;font-size:11px;color:var(--muted)}
+.appt .t{flex:1;min-width:0}
+.appt .t a{text-decoration:none}
+.appt .t small{display:block;color:var(--muted);font-size:13px}
+.appt .acts{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;align-items:center}
+.appt.cancelado .t b,.appt.cancelado .hr{text-decoration:line-through;opacity:.6}
+.pill.x{background:#eee;color:#777}
+
 
 /* modais */
 .modal-bg{position:fixed;inset:0;background:rgba(40,28,22,.55);display:flex;align-items:center;justify-content:center;padding:20px;z-index:50}
@@ -234,6 +263,7 @@ input:focus,select:focus,textarea:focus{outline:2px solid var(--rose-l);border-c
 @media (max-width:1000px){
   .kpis{grid-template-columns:repeat(2,1fr)}
   .dash{grid-template-columns:1fr}
+  .agenda{grid-template-columns:1fr}
 }
 @media (max-width:860px){
   .side{position:fixed;left:0;top:0;transform:translateX(-100%);transition:.2s}
@@ -250,6 +280,11 @@ input:focus,select:focus,textarea:focus{outline:2px solid var(--rose-l);border-c
   .qgrid{grid-template-columns:1fr}
   .arow .al{width:100%}
   .tbl .hide-m{display:none}
+  .cal .day{min-height:52px;padding:4px;align-items:center}
+  .cal .day .chips-m{display:none}
+  .cal .day .cnt{display:block;position:static;margin-top:2px}
+  .cal .day.sel{padding:3px}
+  .cal .calh h3{min-width:0;font-size:16px}
   .chead .actions{margin-left:0;width:100%}
 }
 @media print{
@@ -280,7 +315,7 @@ input:focus,select:focus,textarea:focus{outline:2px solid var(--rose-l);border-c
    Na versão online, só este bloco "DB" é trocado pela nuvem
    (Supabase) — o resto do sistema continua igual.
    ========================================================= */
-const DB_NAME='fichas-estetica', DB_VER=2;
+const DB_NAME='fichas-estetica', DB_VER=3;
 let idb;
 function openDB(){
   return new Promise((res,rej)=>{
@@ -291,6 +326,7 @@ function openDB(){
       if(!d.objectStoreNames.contains('sessions')){const s=d.createObjectStore('sessions',{keyPath:'id'});s.createIndex('clientId','clientId')}
       if(!d.objectStoreNames.contains('photos')){const p=d.createObjectStore('photos',{keyPath:'id'});p.createIndex('clientId','clientId')}
       if(!d.objectStoreNames.contains('procedures'))d.createObjectStore('procedures',{keyPath:'id'});
+      if(!d.objectStoreNames.contains('appointments')){const a=d.createObjectStore('appointments',{keyPath:'id'});a.createIndex('clientId','clientId')}
     };
     r.onsuccess=()=>{idb=r.result;res()};
     r.onerror=()=>rej(r.error);
@@ -375,11 +411,11 @@ const CATEGORIAS=['Facial','Corporal','Capilar','Depilação','Sobrancelhas e c�
 const PROC_PADRAO=[['Limpeza de pele','Facial'],['Peeling químico','Facial'],['Microagulhamento','Facial'],['Hidratação facial','Facial'],['Drenagem linfática','Corporal'],['Massagem modeladora','Corporal'],['Radiofrequência','Corporal'],['Criolipólise','Corporal'],['Depilação a laser','Depilação'],['Design de sobrancelhas','Sobrancelhas e cílios']];
 
 /* ================= estado ================= */
-let D={clients:[],sessions:[],photos:[],procedures:[]};
+let D={clients:[],sessions:[],photos:[],procedures:[],appointments:[]};
 let ui={q:'',sort:'nome',asc:true,aPer:'mes',aProc:'',aQ:'',gQ:'',compare:[]};
 async function load(){
-  const [c,s,p,pr]=await Promise.all(['clients','sessions','photos','procedures'].map(DB.all));
-  D={clients:c,sessions:s,photos:p,procedures:pr};
+  const [c,s,p,pr,ap]=await Promise.all(['clients','sessions','photos','procedures','appointments'].map(DB.all));
+  D={clients:c,sessions:s,photos:p,procedures:pr,appointments:ap};
 }
 const client=id=>D.clients.find(c=>c.id===id);
 const sessOf=cid=>D.sessions.filter(s=>s.clientId===cid).sort((a,b)=>(b.data||'').localeCompare(a.data||'')||(b.criado||0)-(a.criado||0));
@@ -408,6 +444,7 @@ function render(){
         ${nav('#/clientes','☺','Clientes',D.clients.length,inCli&&r.page!=='nova')}
         ${nav('#/nova','＋','Cadastrar cliente',undefined,r.page==='nova')}
         <div class="grp">Atendimento</div>
+        ${nav('#/agenda','▦','Agenda',D.appointments.filter(a=>a.status==='agendado'&&a.data>=today()).length,r.page==='agenda')}
         ${nav('#/atendimentos','✎','Atendimentos',D.sessions.length,r.page==='atendimentos')}
         ${nav('#/galeria','◫','Antes & Depois',D.photos.length,r.page==='galeria')}
         ${nav('#/procedimentos','✦','Procedimentos',D.procedures.length,r.page==='procedimentos')}
@@ -422,13 +459,14 @@ function render(){
         <button class="btn ghost menu" id="menuBtn">☰</button>
         <div class="gsearch"><input id="gq" type="search" placeholder="Buscar cliente (nome, telefone ou CPF)…" autocomplete="off"><div class="res" id="gres"></div></div>
         <div class="sp"></div>
+        <button class="btn hide-sm" onclick="apptModal()">▦ <span class="t">Agendar</span></button>
         <button class="btn hide-sm" onclick="sessionModal()">✎ <span class="t">Registrar atendimento</span></button>
         <a class="btn primary" href="#/nova">＋ <span class="t">Nova cliente</span></a>
       </header>
       <main class="content" id="content"></main>
     </div>
   </div>`;
-  const pages={painel:pPainel,clientes:pClientes,nova:pNova,cliente:pCliente,atendimentos:pAtend,galeria:pGaleria,procedimentos:pProc,ajustes:pAjustes};
+  const pages={painel:pPainel,agenda:pAgenda,clientes:pClientes,nova:pNova,cliente:pCliente,atendimentos:pAtend,galeria:pGaleria,procedimentos:pProc,ajustes:pAjustes};
   $('#content').innerHTML=backupBanner()+(pages[r.page]||pPainel)(r);
   wireShell();
   (after[r.page]||(()=>{}))(r);
@@ -490,13 +528,13 @@ function pPainel(){
   <div class="kpis">
     <div class="kpi" onclick="go('#/clientes')"><div class="l">Clientes cadastradas</div><div class="v">${D.clients.length}</div><div class="s">+${novasMes.length} este mês</div></div>
     <div class="kpi" onclick="go('#/atendimentos')"><div class="l">Atendimentos no mês</div><div class="v">${sesMes.length}</div><div class="s">${plural(sesHoje.length,'hoje','hoje')}</div></div>
-    <div class="kpi" onclick="go('#/galeria')"><div class="l">Fotos registradas</div><div class="v">${D.photos.length}</div><div class="s">antes & depois</div></div>
+    <div class="kpi" onclick="ui.agDay=today();ui.agMonth=today().slice(0,7);go('#/agenda')"><div class="l">Agendados hoje</div><div class="v">${apptsOn(t).filter(a=>a.status!=='cancelado').length}</div><div class="s">${plural(D.appointments.filter(a=>a.status==='agendado'&&a.data>t&&a.data<=addDays(t,7)).length,'nos próximos 7 dias','nos próximos 7 dias')}</div></div>
     <div class="kpi" onclick="document.getElementById('aniv').scrollIntoView({behavior:'smooth'})"><div class="l">Aniversariantes</div><div class="v">${aniv.length}</div><div class="s">em ${mesNome}</div></div>
   </div>
   <div class="quick">
     <button onclick="go('#/nova')"><span class="qi">＋</span><span><b>Cadastrar cliente</b><small>Dados e ficha de anamnese</small></span></button>
     <button onclick="sessionModal()"><span class="qi">✎</span><span><b>Registrar atendimento</b><small>Procedimento, evolução e fotos</small></span></button>
-    <button onclick="document.getElementById('gq').focus()"><span class="qi">⌕</span><span><b>Buscar cliente</b><small>Por nome, telefone ou CPF</small></span></button>
+    <button onclick="apptModal()"><span class="qi">▦</span><span><b>Agendar horário</b><small>Marcar atendimento na agenda</small></span></button>
   </div>
   <div class="dash">
     <div class="col">
@@ -510,6 +548,9 @@ function pPainel(){
       </div>
     </div>
     <div class="col">
+      <div class="card"><h3>▦ Agenda de hoje <a href="#/agenda" onclick="ui.agDay=today();ui.agMonth=today().slice(0,7)">ver agenda →</a></h3>
+        ${(()=>{const l=apptsOn(t);return l.length?l.map(a=>apptRowMini(a)).join(''):'<div class="none">Nenhum horário marcado para hoje. <a href="#" onclick="apptModal();return false">Agendar</a>.</div>'})()}
+      </div>
       <div class="card" id="aniv"><h3>🎂 Aniversariantes de ${mesNome}</h3>
         ${aniv.length?aniv.map(c=>`<div class="li" onclick="go('#/cliente/${c.id}')">${avatar(c)}<div class="t"><b>${esc(c.nome)}</b><small>${fmtDate(c.nascimento).slice(0,5)} · faz ${+age(c.nascimento).split(' ')[0]+(c.nascimento.slice(5)>today().slice(5)?1:0)} anos</small></div>${c.nascimento.slice(5)===today().slice(5)?'<span class="pill">hoje!</span>':''}</div>`).join(''):'<div class="none">Nenhuma aniversariante este mês.</div>'}
       </div>
@@ -591,8 +632,9 @@ function pCliente(r){
   const tabs=[['dados','Dados'],['anamnese','Anamnese'],['evolucao','Evolução',ss.length],['fotos','Antes & Depois',ph.length]];
   let h=`<div class="chead">
     ${avatar(c)}
-    <div><h2>${esc(c.nome)}</h2><div class="meta">${[age(c.nascimento),c.telefone,ss[0]?'última visita '+ago(ss[0].data):'sem atendimentos'].filter(Boolean).map(esc).join(' · ')}</div></div>
+    <div><h2>${esc(c.nome)}</h2><div class="meta">${[age(c.nascimento),c.telefone,ss[0]?'última visita '+ago(ss[0].data):'sem atendimentos',(()=>{const n=D.appointments.filter(a=>a.clientId===c.id&&a.status==='agendado'&&a.data>=today()).sort(apptSort)[0];return n?`próximo horário: ${fmtDate(n.data).slice(0,5)} às ${n.hora}`:''})()].filter(Boolean).map(esc).join(' · ')}</div></div>
     <div class="actions">
+      <button class="btn sm" onclick="apptModal(null,{clientId:'${c.id}'})">▦ Agendar</button>
       <button class="btn primary sm" onclick="sessionModal(null,'${c.id}')">✎ Registrar atendimento</button>
       ${c.telefone&&c.whatsapp!==false?`<a class="btn sm" target="_blank" href="https://wa.me/55${esc(c.telefone.replace(/\D/g,'').replace(/^55(?=\d{10,11}$)/,''))}">WhatsApp</a>`:''}
       <button class="btn sm" onclick="printFicha('${c.id}')">🖨 Imprimir ficha</button>
@@ -873,8 +915,19 @@ function modal(html,cls=''){
 function closeModal(){$$('.modal-bg').forEach(m=>m.remove());pending=[]}
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&$('.modal-bg'))closeModal()});
 
-function sessionModal(id,clientId){
-  const s=id?D.sessions.find(x=>x.id===id):{data:today(),clientId:clientId||(route().page==='cliente'?route().id:'')};
+function wirePicker(m){
+  const pq=$('#pickQ',m),po=$('#pickO',m),hid=$('[name=clientId]',m);
+  const drawOpts=()=>{const l=searchClients(pq.value).sort((a,b)=>norm(a.nome).localeCompare(norm(b.nome))).slice(0,8);
+    po.innerHTML=l.map(x=>`<div data-id="${x.id}">${esc(x.nome)} <span class="muted" style="font-size:12px">${esc(x.telefone||'')}</span></div>`).join('')||`<div data-new>＋ Cadastrar “${esc(pq.value)}” como nova cliente</div>`;
+    po.classList.add('on');
+    $$('div',po).forEach(o=>o.onmousedown=e=>{e.preventDefault();
+      if(o.dataset.new!==undefined){const v=pq.value;closeModal();go('#/nova');setTimeout(()=>{const n=$('[name=nome]');if(n)n.value=v},50);return}
+      hid.value=o.dataset.id;pq.value=client(o.dataset.id).nome;po.classList.remove('on');pq.dispatchEvent(new Event('picked'))})};
+  pq.oninput=()=>{hid.value='';drawOpts()};pq.onfocus=drawOpts;pq.onblur=()=>setTimeout(()=>po.classList.remove('on'),120);
+  return pq;
+}
+function sessionModal(id,clientId,pre={}){
+  const s=id?D.sessions.find(x=>x.id===id):{data:pre.data||today(),procedimento:pre.procedimento||'',clientId:clientId||(route().page==='cliente'?route().id:'')};
   const c=client(s.clientId);
   const existing=id?D.photos.filter(p=>p.sessionId===id):[];
   const sug=[...new Set([...D.procedures.map(p=>p.nome),...D.sessions.map(x=>x.procedimento)].filter(Boolean))].sort();
@@ -894,34 +947,27 @@ function sessionModal(id,clientId){
     <div class="section-t" style="font-size:15px">Adicionar fotos</div>
     <div class="drop" id="mdrop">📷 Clique ou arraste as fotos do antes e do depois</div><input type="file" id="mfile" accept="image/*" multiple hidden><div id="mpend"></div>
     <div class="mbar"><button class="btn" onclick="closeModal()">Cancelar</button><button class="btn primary" id="sSave">Salvar atendimento</button></div>`);
-  // seletor de cliente
-  const pq=$('#pickQ',m),po=$('#pickO',m),hid=$('[name=clientId]',m);
-  const drawOpts=()=>{const l=searchClients(pq.value).sort((a,b)=>norm(a.nome).localeCompare(norm(b.nome))).slice(0,8);
-    po.innerHTML=l.map(x=>`<div data-id="${x.id}">${esc(x.nome)} <span class="muted" style="font-size:12px">${esc(x.telefone||'')}</span></div>`).join('')||`<div data-new>＋ Cadastrar “${esc(pq.value)}” como nova cliente</div>`;
-    po.classList.add('on');
-    $$('div',po).forEach(o=>o.onmousedown=e=>{e.preventDefault();
-      if(o.dataset.new!==undefined){closeModal();go('#/nova');setTimeout(()=>{const n=$('[name=nome]');if(n)n.value=pq.value},50);return}
-      hid.value=o.dataset.id;pq.value=client(o.dataset.id).nome;po.classList.remove('on')})};
-  pq.oninput=()=>{hid.value='';drawOpts()};pq.onfocus=drawOpts;pq.onblur=()=>setTimeout(()=>po.classList.remove('on'),120);
+  const pq=wirePicker(m);
   if(!s.clientId)setTimeout(()=>pq.focus(),30);else setTimeout(()=>$('[name=procedimento]',m).focus(),30);
   const d=$('#mdrop',m),fi=$('#mfile',m);
   d.onclick=()=>fi.click();fi.onchange=()=>addPending(fi.files,$('#mpend'),false);
   d.ondragover=e=>{e.preventDefault();d.classList.add('over')};d.ondragleave=()=>d.classList.remove('over');
   d.ondrop=e=>{e.preventDefault();d.classList.remove('over');addPending(e.dataTransfer.files,$('#mpend'),false)};
-  $('#sSave',m).onclick=()=>saveSession(id);
+  $('#sSave',m).onclick=()=>saveSession(id,pre.apptId);
 }
-async function saveSession(id){
+async function saveSession(id,apptId){
   const d=Object.fromEntries(new FormData($('#fSess')));
   if(!d.clientId)return toast('Escolha a cliente na lista');
   const s=id?D.sessions.find(x=>x.id===id):{id:uid(),criado:Date.now()};
   Object.assign(s,d);await DB.put('sessions',s);
+  if(apptId){const a=D.appointments.find(x=>x.id===apptId);if(a){a.status='realizado';a.sessionId=s.id;await DB.put('appointments',a)}}
   for(const p of D.photos.filter(p=>p.sessionId===s.id)){p.data=s.data;await DB.put('photos',p)}
   if(s.procedimento&&!D.procedures.some(p=>norm(p.nome)===norm(s.procedimento)))await DB.put('procedures',{id:uid(),nome:s.procedimento,categoria:'Outros'});
   const keep=pending;$$('.modal-bg').forEach(x=>x.remove());pending=keep;
   const r=route();
   await savePending(s.clientId,s.id,s.data);
   toast('Atendimento salvo ✓');
-  if(!(r.page==='cliente'&&r.id===s.clientId)&&r.page!=='atendimentos'&&r.page!=='painel')go(`#/cliente/${s.clientId}/evolucao`);
+  if(!(r.page==='cliente'&&r.id===s.clientId)&&r.page!=='atendimentos'&&r.page!=='painel'&&r.page!=='agenda')go(`#/cliente/${s.clientId}/evolucao`);
 }
 async function deleteSession(id){
   const n=D.photos.filter(p=>p.sessionId===id).length;
@@ -956,6 +1002,124 @@ function compareModal(){
   };
   $('#mSide',m).onclick=side;$('#mSlide',m).onclick=slide;side();
 }
+
+
+/* ================= AGENDA ================= */
+const STATUS={agendado:['Agendado',''],realizado:['Realizado','g'],faltou:['Faltou','w'],cancelado:['Cancelado','x']};
+function addDays(ymd,n){const d=new Date(ymd+'T12:00');d.setDate(d.getDate()+n);return new Date(d-d.getTimezoneOffset()*6e4).toISOString().slice(0,10)}
+const apptSort=(a,b)=>(a.data+a.hora).localeCompare(b.data+b.hora);
+const apptsOn=dia=>D.appointments.filter(a=>a.data===dia).sort(apptSort);
+const toMin=h=>{const [a,b]=(h||'0:0').split(':').map(Number);return a*60+b};
+const fimHora=a=>{const m=toMin(a.hora)+(+a.duracao||60);return String(Math.floor(m/60)%24).padStart(2,'0')+':'+String(m%60).padStart(2,'0')};
+const cap1=t=>t.charAt(0).toUpperCase()+t.slice(1);
+const diaLongo=d=>cap1(new Date(d+'T12:00').toLocaleDateString('pt-BR',{weekday:'long',day:'numeric',month:'long'}));
+function apptRowMini(a){
+  const c=client(a.clientId);if(!c)return'';const [l,cls]=STATUS[a.status]||STATUS.agendado;
+  return `<div class="li" onclick="ui.agDay='${a.data}';ui.agMonth='${a.data.slice(0,7)}';go('#/agenda')"><div class="hr">${esc(a.hora)}</div><div class="t"><b>${esc(c.nome)}</b><small>${esc(a.procedimento||'Atendimento')}</small></div>${a.status!=='agendado'?`<span class="pill ${cls}">${l}</span>`:''}</div>`;
+}
+function pAgenda(){
+  ui.agDay=ui.agDay||today();ui.agMonth=ui.agMonth||ui.agDay.slice(0,7);
+  return `<div class="ptitle"><div><h2>Agenda</h2><p>Clique em um dia para ver os horários marcados</p></div>
+    <div class="act"><button class="btn primary" onclick="apptModal(null,{data:ui.agDay})">＋ Agendar horário</button></div></div>
+  <div class="agenda"><div class="card cal" id="cal"></div><div class="col"><div class="card" id="dayBox"></div><div class="card" id="nextBox"></div></div></div>`;
+}
+after.agenda=()=>drawAgenda();
+function drawAgenda(){
+  const [y,m]=ui.agMonth.split('-').map(Number);const first=new Date(y,m-1,1);
+  const start=addDays(`${ui.agMonth}-01`,-first.getDay());const t=today();
+  const nomeMes=cap1(first.toLocaleDateString('pt-BR',{month:'long',year:'numeric'}));
+  let cells='';
+  for(let i=0;i<42;i++){
+    const d=addDays(start,i);const out=d.slice(0,7)!==ui.agMonth;
+    if(i===35&&out)break;
+    const l=apptsOn(d).filter(a=>a.status!=='cancelado');
+    cells+=`<button class="day ${out?'out':''} ${d===t?'today':''} ${d===ui.agDay?'sel':''}" data-d="${d}">
+      <span class="n">${+d.slice(8)}</span>
+      ${l.length?`<span class="cnt">${l.length}</span><span class="chips-m">${l.slice(0,3).map(a=>`<span class="ev ${a.status}">${esc(a.hora)} ${esc((client(a.clientId)?.nome||'').split(' ')[0])}</span>`).join('')}${l.length>3?`<span class="more">+${l.length-3}</span>`:''}</span>`:''}
+    </button>`;
+  }
+  $('#cal').innerHTML=`<div class="calh"><button class="btn ghost sm" data-nav="-1">‹</button><h3>${nomeMes}</h3><button class="btn ghost sm" data-nav="1">›</button><button class="btn sm" data-nav="0" style="margin-left:auto">Hoje</button></div>
+    <div class="dow">${['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'].map(x=>`<span>${x}</span>`).join('')}</div><div class="days">${cells}</div>`;
+  $$('#cal [data-nav]').forEach(b=>b.onclick=()=>{const n=+b.dataset.nav;
+    if(n===0){ui.agDay=t;ui.agMonth=t.slice(0,7)}else{const d=new Date(y,m-1+n,1);ui.agMonth=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`}drawAgenda()});
+  $$('#cal .day').forEach(b=>b.onclick=()=>{ui.agDay=b.dataset.d;if(b.classList.contains('out'))ui.agMonth=ui.agDay.slice(0,7);drawAgenda();
+    if(innerWidth<860)$('#dayBox').scrollIntoView({behavior:'smooth',block:'start'})});
+  // dia selecionado
+  const l=apptsOn(ui.agDay);
+  const avulsos=D.sessions.filter(x=>x.data===ui.agDay&&!D.appointments.some(a=>a.sessionId===x.id));
+  $('#dayBox').innerHTML=`<h3>${diaLongo(ui.agDay)}${ui.agDay===t?' <span class="pill">hoje</span>':''}<a href="#" onclick="apptModal(null,{data:ui.agDay});return false">＋ agendar</a></h3>
+    ${l.length?l.map(apptRow).join(''):'<div class="none">Nenhum horário marcado neste dia.</div>'}
+    ${avulsos.length?`<div class="sub-t">Atendimentos registrados sem agendamento</div>${avulsos.map(x=>{const c=client(x.clientId);return c?`<div class="li" onclick="go('#/cliente/${c.id}/evolucao')"><div class="t"><b>${esc(c.nome)}</b><small>${esc(x.procedimento||'Atendimento')}</small></div><span class="pill g">Realizado</span></div>`:''}).join('')}`:''}`;
+  // próximos dias
+  const prox=D.appointments.filter(a=>a.status==='agendado'&&a.data>t&&a.data<=addDays(t,7)).sort(apptSort);
+  let h='<h3>Próximos 7 dias</h3>',last='';
+  if(!prox.length)h+='<div class="none">Nenhum horário marcado nos próximos dias.</div>';
+  for(const a of prox){if(a.data!==last){h+=`<div class="sub-t">${diaLongo(a.data)}</div>`;last=a.data}h+=apptRowMini(a)}
+  $('#nextBox').innerHTML=h;
+}
+function apptRow(a){
+  const c=client(a.clientId);if(!c)return'';const [l,cls]=STATUS[a.status]||STATUS.agendado;
+  const tel=(c.telefone||'').replace(/\D/g,'').replace(/^55(?=\d{10,11}$)/,'');
+  const msg=`Olá, ${c.nome.split(' ')[0]}! Passando para lembrar do seu horário de ${a.procedimento||'atendimento'} no ${settings().nome}, ${diaLongo(a.data)}, às ${a.hora}. Podemos confirmar?`;
+  return `<div class="appt ${a.status}">
+    <div class="hr">${esc(a.hora)}<small>até ${fimHora(a)}</small></div>
+    <div class="t"><a href="#/cliente/${c.id}"><b>${esc(c.nome)}</b></a>${ALERTA_ICON(c)}<small>${esc(a.procedimento||'Atendimento')}${a.obs?' · '+esc(a.obs):''}</small>
+      <div class="acts">
+        ${a.status==='agendado'?`<button class="btn sm primary" onclick="concluirAppt('${a.id}')">✓ Realizado</button><button class="btn sm" onclick="setApptStatus('${a.id}','faltou')">Faltou</button><button class="btn sm" onclick="setApptStatus('${a.id}','cancelado')">Cancelar</button>${tel&&c.whatsapp!==false?`<a class="btn sm" target="_blank" href="https://wa.me/55${tel}?text=${encodeURIComponent(msg)}">Lembrar no WhatsApp</a>`:''}`
+          :`<span class="pill ${cls}">${l}</span>${a.sessionId?`<a class="btn sm ghost" href="#/cliente/${c.id}/evolucao">ver atendimento</a>`:`<button class="btn sm ghost" onclick="setApptStatus('${a.id}','agendado')">desfazer</button>`}`}
+        <button class="btn sm ghost" onclick="apptModal('${a.id}')">Editar</button>
+      </div>
+    </div>
+  </div>`;
+}
+const ALERTA_ICON=c=>Object.keys(ALERTAS).some(k=>c.anamnese?.[k]==='sim')?' <span title="Possui alerta na anamnese" style="color:var(--danger)">⚠</span>':'';
+function apptModal(id,pre={}){
+  const a=id?D.appointments.find(x=>x.id===id):{data:pre.data||today(),hora:'',duracao:60,clientId:pre.clientId||(route().page==='cliente'?route().id:''),status:'agendado'};
+  const c=client(a.clientId);
+  const sug=[...new Set([...D.procedures.map(p=>p.nome),...D.sessions.map(x=>x.procedimento)].filter(Boolean))].sort();
+  const horas=[];for(let h=7;h<=21;h++)for(const mm of ['00','30'])horas.push(`${String(h).padStart(2,'0')}:${mm}`);
+  const m=modal(`<h3>${id?'Editar agendamento':'Agendar horário'}</h3>
+    <form id="fAppt" class="grid" onsubmit="return false">
+      <div class="field full picker"><label>Cliente *</label>
+        <input id="pickQ" placeholder="Digite o nome da cliente…" value="${esc(c?.nome||'')}" autocomplete="off">
+        <input type="hidden" name="clientId" value="${esc(a.clientId||'')}"><div class="opts" id="pickO"></div></div>
+      <div class="field"><label>Data *</label><input type="date" name="data" value="${esc(a.data)}"></div>
+      <div class="field"><label>Horário *</label><input name="hora" list="horas" value="${esc(a.hora)}" placeholder="Ex: 14:00" inputmode="numeric"><datalist id="horas">${horas.map(h=>`<option>${h}</option>`).join('')}</datalist></div>
+      <div class="field"><label>Duração</label><select name="duracao">${[30,45,60,90,120,180].map(d=>`<option value="${d}" ${+a.duracao===d?'selected':''}>${d<60?d+' min':(d/60)+'h'+(d%60?'30':'')}</option>`).join('')}</select></div>
+      <div class="field"><label>Procedimento</label><input name="procedimento" list="procs2" value="${esc(a.procedimento)}" placeholder="Escolha ou digite"><datalist id="procs2">${sug.map(p=>`<option>${esc(p)}</option>`).join('')}</datalist></div>
+      <div class="field full"><label>Observação</label><input name="obs" value="${esc(a.obs)}" placeholder="Ex: primeira sessão, trazer exames…"></div>
+    </form>
+    <div id="apptWarn"></div>
+    <div class="mbar">${id?`<button class="btn danger" style="margin-right:auto" onclick="deleteAppt('${id}')">Excluir</button>`:''}<button class="btn" onclick="closeModal()">Cancelar</button><button class="btn primary" id="aSave">Salvar</button></div>`);
+  const pq=wirePicker(m);
+  const warn=()=>{const cl=client($('[name=clientId]',m).value);$('#apptWarn',m).innerHTML=cl?alertas(cl):''};
+  pq.addEventListener('picked',warn);warn();
+  const hr=$('[name=hora]',m);hr.addEventListener('blur',()=>{const d=hr.value.replace(/\D/g,'');if(/^\d{3,4}$/.test(d))hr.value=d.padStart(4,'0').replace(/(\d\d)(\d\d)/,'$1:$2');else if(/^\d{1,2}$/.test(d))hr.value=d.padStart(2,'0')+':00'});
+  setTimeout(()=>(a.clientId?hr:pq).focus(),30);
+  $('#aSave',m).onclick=()=>saveAppt(id);
+}
+async function saveAppt(id){
+  const d=Object.fromEntries(new FormData($('#fAppt')));
+  if(!d.clientId)return toast('Escolha a cliente na lista');
+  if(!d.data)return toast('Informe a data');
+  if(!/^([01]\d|2[0-3]):[0-5]\d$/.test(d.hora))return toast('Informe o horário no formato 14:00');
+  d.duracao=+d.duracao;
+  const ini=toMin(d.hora),fim=ini+d.duracao;
+  const choque=D.appointments.filter(x=>x.id!==id&&x.data===d.data&&x.status==='agendado').find(x=>{const a=toMin(x.hora),b=a+(+x.duracao||60);return ini<b&&a<fim});
+  if(choque&&!confirm(`Já existe um horário com ${client(choque.clientId)?.nome||'outra cliente'} das ${choque.hora} às ${fimHora(choque)}.\n\nAgendar mesmo assim?`))return;
+  const a=id?D.appointments.find(x=>x.id===id):{id:uid(),status:'agendado',criado:Date.now()};
+  Object.assign(a,d);await DB.put('appointments',a);
+  if(a.procedimento&&!D.procedures.some(p=>norm(p.nome)===norm(a.procedimento)))await DB.put('procedures',{id:uid(),nome:a.procedimento,categoria:'Outros'});
+  await load();closeModal();ui.agDay=a.data;ui.agMonth=a.data.slice(0,7);
+  toast(`Agendado: ${fmtDate(a.data).slice(0,5)} às ${a.hora} ✓`);
+  if(route().page==='agenda')render();else go('#/agenda');
+}
+async function setApptStatus(id,st){
+  const a=D.appointments.find(x=>x.id===id);a.status=st;await DB.put('appointments',a);await load();render();
+  toast(st==='agendado'?'Agendamento reaberto':`Marcado como ${STATUS[st][0].toLowerCase()}`);
+}
+function concluirAppt(id){const a=D.appointments.find(x=>x.id===id);sessionModal(null,a.clientId,{data:a.data,procedimento:a.procedimento,apptId:a.id})}
+async function deleteAppt(id){if(!confirm('Excluir este agendamento?'))return;await DB.del('appointments',id);await load();closeModal();render();toast('Agendamento excluído')}
 
 /* ================= impressão ================= */
 function printFicha(id){
@@ -993,7 +1157,7 @@ const toData=b=>new Promise(r=>{const f=new FileReader();f.onload=()=>r(f.result
 async function exportBackup(){
   toast('Gerando backup…');
   const photos=[];for(const p of D.photos)photos.push({...p,blob:await toData(p.blob)});
-  const data={app:'fichas-estetica',versao:2,gerado:new Date().toISOString(),settings:{nome:settings().nome},...D,photos};
+  const data={app:'fichas-estetica',versao:3,gerado:new Date().toISOString(),settings:{nome:settings().nome},...D,photos};
   dl(new Blob([JSON.stringify(data)],{type:'application/json'}),`backup-fichas-${today()}.json`);
   LS.set('fe-lastbackup',Date.now());render();toast('Backup baixado ✓ Guarde fora do computador.');
 }
@@ -1004,6 +1168,7 @@ async function importBackup(file){
     for(const x of data.clients)await DB.put('clients',x);
     for(const x of data.sessions)await DB.put('sessions',x);
     for(const x of data.procedures||[])await DB.put('procedures',x);
+    for(const x of data.appointments||[])await DB.put('appointments',x);
     for(const p of data.photos)await DB.put('photos',{...p,blob:await (await fetch(p.blob)).blob()});
     if(data.settings?.nome)LS.set('fe-settings',{...settings(),nome:data.settings.nome});
     await load();go('#/painel');toast('Backup restaurado ✓');
@@ -1035,11 +1200,18 @@ async function loadDemo(){
                 await DB.put('photos',{id:`demo_p${i}b`,demo:true,clientId:id,sessionId:sid,tipo:'depois',data:d,regiao:'Rosto',blob:await img('#e9cfc3','#f7ebe5')});}
     }
   }
+  const horas=['09:00','10:30','14:00','15:30','17:00'];let n=0;
+  for(let d=-3;d<=12;d++){
+    const dia=addDays(today(),d);if(new Date(dia+'T12:00').getDay()===0)continue;
+    const qtd=[2,1,3,0,2,1][(d+8)%6];
+    for(let k=0;k<qtd;k++){const ci=(n++)%nomes.length;
+      await DB.put('appointments',{id:`demo_a${d}_${k}`,demo:true,clientId:'demo_c'+ci,data:dia,hora:horas[(k*2+d+9)%5],duracao:60,procedimento:procs[(ci+k)%5],obs:'',status:d<0?(k===1?'faltou':'realizado'):'agendado',criado:Date.now()})}
+  }
   await load();go('#/painel');render();toast('Exemplos carregados ✓');
 }
 async function clearDemo(){
   if(!confirm('Apagar todos os dados de exemplo? As fichas cadastradas por você continuam.'))return;
-  for(const st of ['clients','sessions','photos'])for(const x of D[st].filter(x=>x.demo))await DB.del(st,x.id);
+  for(const st of ['clients','sessions','photos','appointments'])for(const x of D[st].filter(x=>x.demo))await DB.del(st,x.id);
   await load();render();toast('Exemplos apagados');
 }
 
