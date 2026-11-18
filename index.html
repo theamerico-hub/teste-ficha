@@ -14,15 +14,21 @@
 <link rel="icon" type="image/png" href="favicon.png">
 <link rel="manifest" href="manifest.webmanifest">
 <style>
+@font-face{font-family:"Cormorant Garamond";font-style:normal;font-display:swap;font-weight:300 700;src:url(fonts/cormorant-garamond-latin-wght-normal.woff2) format("woff2");unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+@font-face{font-family:"Cormorant Garamond";font-style:normal;font-display:swap;font-weight:300 700;src:url(fonts/cormorant-garamond-latin-ext-wght-normal.woff2) format("woff2");unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF}
+@font-face{font-family:"Cormorant Garamond";font-style:italic;font-display:swap;font-weight:300 700;src:url(fonts/cormorant-garamond-latin-wght-italic.woff2) format("woff2");unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+@font-face{font-family:"Jost";font-style:normal;font-display:swap;font-weight:300 700;src:url(fonts/jost-latin-wght-normal.woff2) format("woff2");unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+@font-face{font-family:"Jost";font-style:normal;font-display:swap;font-weight:300 700;src:url(fonts/jost-latin-ext-wght-normal.woff2) format("woff2");unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF}
 :root{
+  --serif:"Cormorant Garamond",Georgia,"Times New Roman",serif; --sans:"Jost",-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
   --bg:#f6f2ee; --card:#fff; --ink:#2f2a27; --muted:#8a7f78; --line:#ebe3dc;
   --rose:#b7826f; --rose-d:#9a6a58; --rose-l:#f4e8e2; --sage:#7d9283; --sage-l:#e6ece7;
   --side:#2f2724; --side-ink:#d9cdc6; --danger:#b4534a;
   --radius:14px; --shadow:0 1px 2px rgba(60,40,30,.05),0 4px 16px rgba(60,40,30,.06);
 }
 *{box-sizing:border-box}
-html,body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.45 -apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif}
-h1,h2,h3{font-family:Georgia,"Times New Roman",serif;font-weight:normal;margin:0}
+html,body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 var(--sans);-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+h1,h2,h3{font-family:var(--serif);font-weight:normal;margin:0}
 button{font:inherit;cursor:pointer}
 input,select,textarea{font:inherit;color:inherit}
 a{color:inherit}
@@ -31,8 +37,8 @@ a{color:inherit}
 .shell{display:flex;min-height:100vh}
 .side{width:240px;flex:none;background:var(--side);color:var(--side-ink);display:flex;flex-direction:column;position:sticky;top:0;height:100vh;z-index:30}
 .side .brand{display:flex;gap:10px;align-items:center;padding:22px 18px 18px}
-.logo{width:38px;height:38px;border-radius:50%;background:var(--rose);color:#fff;display:grid;place-items:center;font-family:Georgia,serif;font-style:italic;font-size:15px;letter-spacing:.02em;flex:none;box-shadow:inset 0 0 0 2px var(--rose),inset 0 0 0 3px rgba(255,255,255,.7)}
-.side .brand b{display:block;color:#fff;font-family:Georgia,serif;font-weight:normal;font-size:16px;line-height:1.2}
+.logo{width:38px;height:38px;border-radius:50%;background:var(--rose);color:#fff;display:grid;place-items:center;font-family:var(--serif);font-style:italic;font-size:15px;letter-spacing:.02em;flex:none;box-shadow:inset 0 0 0 2px var(--rose),inset 0 0 0 3px rgba(255,255,255,.7)}
+.side .brand b{display:block;color:#fff;font-family:var(--serif);font-weight:normal;font-size:16px;line-height:1.2}
 .side .brand small{font-size:11px;opacity:.7}
 .nav{display:flex;flex-direction:column;gap:2px;padding:6px 10px;flex:1}
 .nav .grp{font-size:10px;text-transform:uppercase;letter-spacing:.1em;opacity:.5;padding:14px 10px 6px}
@@ -72,12 +78,12 @@ a{color:inherit}
 .btn[disabled]{opacity:.5;pointer-events:none}
 .card{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px}
 .card h3{font-size:18px;margin-bottom:12px;display:flex;align-items:center;gap:8px}
-.card h3 a{margin-left:auto;font-family:-apple-system,"Segoe UI",Roboto,sans-serif;font-size:13px;color:var(--rose-d);text-decoration:none}
+.card h3 a{margin-left:auto;font-family:var(--sans);font-size:13px;color:var(--rose-d);text-decoration:none}
 .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:18px}
 .kpi{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);padding:18px 20px;cursor:pointer;border:1px solid transparent}
 .kpi:hover{border-color:var(--rose-l)}
 .kpi .l{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
-.kpi .v{font-family:Georgia,serif;font-size:34px;line-height:1.1;margin-top:6px}
+.kpi .v{font-family:var(--serif);font-size:34px;line-height:1.1;margin-top:6px}
 .kpi .s{font-size:12px;color:var(--muted);margin-top:2px}
 .dash{display:grid;grid-template-columns:1.6fr 1fr;gap:16px}
 .dash .col{display:flex;flex-direction:column;gap:16px}
@@ -140,7 +146,7 @@ table.tbl{width:100%;border-collapse:collapse;background:#fff;border-radius:var(
 .field input,.field select,.field textarea{padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:#fff}
 .field textarea{min-height:80px;resize:vertical}
 input:focus,select:focus,textarea:focus{outline:2px solid var(--rose-l);border-color:var(--rose)!important}
-.section-t{font-family:Georgia,serif;font-size:18px;margin:22px 0 12px;padding-bottom:6px;border-bottom:1px solid var(--line)}
+.section-t{font-family:var(--serif);font-size:18px;margin:22px 0 12px;padding-bottom:6px;border-bottom:1px solid var(--line)}
 .section-t:first-child{margin-top:0}
 .formbar{display:flex;gap:10px;justify-content:flex-end;margin-top:20px;position:sticky;bottom:10px}
 .formbar .card{display:flex;gap:10px;padding:10px;align-items:center}
@@ -178,7 +184,7 @@ input:focus,select:focus,textarea:focus{outline:2px solid var(--rose-l);border-c
 .sess{background:#fff;border-radius:var(--radius);box-shadow:var(--shadow);padding:16px 18px;border-left:4px solid var(--rose)}
 .sess .h{display:flex;gap:10px;align-items:baseline;flex-wrap:wrap}
 .sess .dt{font-weight:600}
-.sess .proc{font-family:Georgia,serif;font-size:17px}
+.sess .proc{font-family:var(--serif);font-size:17px}
 .sess .reg{color:var(--muted);font-size:13px}
 .sess .h .act{margin-left:auto;display:flex;gap:4px}
 .sess .body{margin-top:6px;white-space:pre-wrap;font-size:14px}
@@ -335,6 +341,43 @@ input:focus,select:focus,textarea:focus{outline:2px solid var(--rose-l);border-c
   #print .sig{margin-top:30px;display:flex;gap:40px}
   #print .sig div{flex:1;border-top:1px solid #000;text-align:center;padding-top:4px}
 }
+
+/* ---------- visual: tipografia e acabamento ---------- */
+:root{--bg:#f8f4f0;--line:#ece2da;--side:#3a2e2a;--radius:16px;--shadow:0 1px 2px rgba(80,50,40,.04),0 6px 20px rgba(80,50,40,.06)}
+h1,h2,h3{font-weight:600;letter-spacing:.005em}
+.ptitle h2{font-size:34px;line-height:1.1}
+.card h3{font-size:22px}
+.modal h3{font-size:26px}
+.chead h2{font-size:30px}
+.section-t{font-size:21px;font-weight:600}
+.sess .proc{font-size:19px;font-weight:600}
+.kpi .v{font-size:40px;font-weight:600;font-variant-numeric:lining-nums;font-feature-settings:"lnum" 1}
+h1,h2,h3,.ptitle h2{font-variant-numeric:lining-nums;font-feature-settings:"lnum" 1}
+.kpi .l,.field label,.tbl th,.sub-t,.nav .grp{font-family:var(--sans);letter-spacing:.08em;font-weight:500}
+.logo{font-size:17px;font-weight:600}
+.side .brand b{font-size:20px;font-weight:600;letter-spacing:.01em}
+.side .brand small{letter-spacing:.03em;font-size:12px;opacity:.7;white-space:nowrap}
+.nav a{font-size:15px;padding:10px 12px;border-radius:11px}
+.nav a .ic,.bnav a span,.qi,.btn .i{display:inline-grid;place-items:center}
+.i{width:18px;height:18px;flex:none}
+.nav a .ic .i{width:18px;height:18px;opacity:.85}
+.nav a.on .ic .i{opacity:1}
+.qi .i{width:20px;height:20px}
+.bnav a span .i{width:22px;height:22px}
+.btn{border-radius:12px;font-weight:500;letter-spacing:.01em}
+.btn.primary{box-shadow:0 2px 8px rgba(183,130,111,.25)}
+.btn .i{width:17px;height:17px;margin-right:2px}
+.quick button{border-radius:16px}
+.quick b{font-weight:600;font-size:15px}
+.li .t b,.tbl b,.appt .t b{font-weight:500!important}
+.tab{font-size:15px}
+.tab.on{font-weight:500}
+.pill{font-weight:500;font-family:var(--sans);font-size:12px}
+.field input,.field select,.field textarea,.filters input,.filters select,.gsearch input{border-radius:12px;font-size:16px}
+.gsearch::before{content:"";width:18px;height:18px;transform:translateY(-50%);background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%238a7f78' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cpath d='m21 21-4.34-4.34'/%3E%3C/svg%3E") center/contain no-repeat}
+.lock h2{font-size:30px}
+.empty h2{font-size:26px}
+.bnav a{font-size:11.5px;font-weight:500}
 </style>
 </head>
 <body>
@@ -375,6 +418,10 @@ const DB={
 };
 
 /* ================= utilidades ================= */
+const ICONES={"house": "<path d=\"M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8\" /> <path d=\"M3 10a2 2 0 0 1 .709-1.528l7-6a2 2 0 0 1 2.582 0l7 6A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z\" />", "users": "<path d=\"M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2\" /> <path d=\"M16 3.128a4 4 0 0 1 0 7.744\" /> <path d=\"M22 21v-2a4 4 0 0 0-3-3.87\" /> <circle cx=\"9\" cy=\"7\" r=\"4\" />", "user-plus": "<path d=\"M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2\" /> <circle cx=\"9\" cy=\"7\" r=\"4\" /> <line x1=\"19\" x2=\"19\" y1=\"8\" y2=\"14\" /> <line x1=\"22\" x2=\"16\" y1=\"11\" y2=\"11\" />", "heart": "<path d=\"M2 9.5a5.5 5.5 0 0 1 9.591-3.676.56.56 0 0 0 .818 0A5.49 5.49 0 0 1 22 9.5c0 2.29-1.5 4-3 5.5l-5.492 5.313a2 2 0 0 1-3 .019L5 15c-1.5-1.5-3-3.2-3-5.5\" />", "calendar-days": "<path d=\"M8 2v3\" /> <path d=\"M16 2v3\" /> <rect x=\"3\" y=\"3\" width=\"18\" height=\"18\" rx=\"2\" /> <path d=\"M3 9h18\" /> <path d=\"M8 13h.01\" /> <path d=\"M12 13h.01\" /> <path d=\"M16 13h.01\" /> <path d=\"M8 17h.01\" /> <path d=\"M12 17h.01\" /> <path d=\"M16 17h.01\" />", "notebook-pen": "<path d=\"M13.4 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-7.4\" /> <path d=\"M2 6h4\" /> <path d=\"M2 10h4\" /> <path d=\"M2 14h4\" /> <path d=\"M2 18h4\" /> <path d=\"M21.378 5.626a1 1 0 1 0-3.004-3.004l-5.01 5.012a2 2 0 0 0-.506.854l-.837 2.87a.5.5 0 0 0 .62.62l2.87-.837a2 2 0 0 0 .854-.506z\" />", "images": "<path d=\"m22 11-1.296-1.296a2.4 2.4 0 0 0-3.408 0L11 16\" /> <path d=\"M4 8a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2\" /> <circle cx=\"13\" cy=\"7\" r=\"1\" fill=\"currentColor\" /> <rect x=\"8\" y=\"2\" width=\"14\" height=\"14\" rx=\"2\" />", "sparkles": "<path d=\"M11.017 2.814a1 1 0 0 1 1.966 0l1.051 5.558a2 2 0 0 0 1.594 1.594l5.558 1.051a1 1 0 0 1 0 1.966l-5.558 1.051a2 2 0 0 0-1.594 1.594l-1.051 5.558a1 1 0 0 1-1.966 0l-1.051-5.558a2 2 0 0 0-1.594-1.594l-5.558-1.051a1 1 0 0 1 0-1.966l5.558-1.051a2 2 0 0 0 1.594-1.594z\" /> <path d=\"M20 2v4\" /> <path d=\"M22 4h-4\" /> <circle cx=\"4\" cy=\"20\" r=\"2\" />", "settings": "<path d=\"M9.671 4.136a2.34 2.34 0 0 1 4.659 0 2.34 2.34 0 0 0 3.319 1.915 2.34 2.34 0 0 1 2.33 4.033 2.34 2.34 0 0 0 0 3.831 2.34 2.34 0 0 1-2.33 4.033 2.34 2.34 0 0 0-3.319 1.915 2.34 2.34 0 0 1-4.659 0 2.34 2.34 0 0 0-3.32-1.915 2.34 2.34 0 0 1-2.33-4.033 2.34 2.34 0 0 0 0-3.831A2.34 2.34 0 0 1 6.35 6.051a2.34 2.34 0 0 0 3.319-1.915\" /> <circle cx=\"12\" cy=\"12\" r=\"3\" />", "menu": "<path d=\"M4 5h16\" /> <path d=\"M4 12h16\" /> <path d=\"M4 19h16\" />", "plus": "<path d=\"M5 12h14\" /> <path d=\"M12 5v14\" />", "search": "<path d=\"m21 21-4.34-4.34\" /> <circle cx=\"11\" cy=\"11\" r=\"8\" />", "log-out": "<path d=\"m16 17 5-5-5-5\" /> <path d=\"M21 12H9\" /> <path d=\"M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4\" />", "printer": "<path d=\"M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2\" /> <path d=\"M6 9V3a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v6\" /> <rect x=\"6\" y=\"14\" width=\"12\" height=\"8\" rx=\"1\" />"};
+const ico=n=>ICONES[n]?`<svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONES[n]}</svg>`:n;
+const SIMB={'◧':'house','☺':'users','＋':'user-plus','♡':'heart','▦':'calendar-days','✎':'notebook-pen','◫':'images','✦':'sparkles','⚙':'settings','☰':'menu'};
+
 const $=(sel,el=document)=>el.querySelector(sel);
 const $$=(sel,el=document)=>[...el.querySelectorAll(sel)];
 const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,8);
@@ -468,7 +515,7 @@ window.addEventListener('hashchange',()=>{closeModal();render();window.scrollTo(
 function render(){
   freeURLs();
   const r=route(), s=settings();
-  const nav=(h,ic,l,cnt,on)=>`<a href="${h}" class="${on?'on':''}"><span class="ic">${ic}</span>${l}${cnt!==undefined?`<span class="cnt">${cnt}</span>`:''}</a>`;
+  const nav=(h,ic,l,cnt,on)=>`<a href="${h}" class="${on?'on':''}"><span class="ic">${ico(SIMB[ic]||ic)}</span>${l}${cnt!==undefined?`<span class="cnt">${cnt}</span>`:''}</a>`;
   const inCli=['clientes','cliente','nova'].includes(r.page);
   $('#root').innerHTML=`<div class="shell">
     <aside class="side" id="side">
@@ -491,17 +538,17 @@ function render(){
     </aside>
     <div class="scrim" id="scrim"></div>
     <nav class="bnav">
-      ${[['#/painel','◧','Início','painel'],['#/agenda','▦','Agenda','agenda'],['#/clientes','☺','Clientes','clientes'],['#/atendimentos','✎','Histórico','atendimentos']].map(([h,i,l,k])=>`<a href="${h}" class="${r.page===k||(k==='clientes'&&inCli)?'on':''}"><span>${i}</span>${l}</a>`).join('')}
-      <a href="#" id="bMore" class="${['galeria','procedimentos','relacionamento','ajustes'].includes(r.page)?'on':''}"><span>☰</span>Mais</a>
+      ${[['#/painel','◧','Início','painel'],['#/agenda','▦','Agenda','agenda'],['#/clientes','☺','Clientes','clientes'],['#/atendimentos','✎','Histórico','atendimentos']].map(([h,i,l,k])=>`<a href="${h}" class="${r.page===k||(k==='clientes'&&inCli)?'on':''}"><span>${ico(SIMB[i])}</span>${l}</a>`).join('')}
+      <a href="#" id="bMore" class="${['galeria','procedimentos','relacionamento','ajustes'].includes(r.page)?'on':''}"><span>${ico('menu')}</span>Mais</a>
     </nav>
     <div class="main">
       <header class="topbar">
-        <button class="btn ghost menu" id="menuBtn">☰</button>
+        <button class="btn ghost menu" id="menuBtn" aria-label="Menu">${ico('menu')}</button>
         <div class="gsearch"><input id="gq" type="search" placeholder="Buscar cliente (nome, telefone ou CPF)…" autocomplete="off"><div class="res" id="gres"></div></div>
         <div class="sp"></div>
-        <button class="btn hide-sm" onclick="apptModal()">▦ <span class="t">Agendar</span></button>
-        <button class="btn hide-sm" onclick="sessionModal()">✎ <span class="t">Registrar atendimento</span></button>
-        <a class="btn primary" href="#/nova">＋ <span class="t">Nova cliente</span></a>
+        <button class="btn hide-sm" onclick="apptModal()">${ico('calendar-days')}<span class="t">Agendar</span></button>
+        <button class="btn hide-sm" onclick="sessionModal()">${ico('notebook-pen')}<span class="t">Registrar atendimento</span></button>
+        <a class="btn primary" href="#/nova">${ico('plus')}<span class="t">Nova cliente</span></a>
       </header>
       <main class="content" id="content"></main>
     </div>
@@ -573,12 +620,12 @@ function pPainel(){
     <div class="kpi" onclick="go('#/relacionamento/aniversariantes')"><div class="l">Aniversariantes</div><div class="v">${aniv.length}</div><div class="s">este mês</div></div>
   </div>
   <div class="quick">
-    <button onclick="apptModal()"><span class="qi">▦</span><span><b>Agendar horário</b><small>Marcar na agenda</small></span></button>
-    <button onclick="sessionModal()"><span class="qi">✎</span><span><b>Registrar atendimento</b><small>Evolução e fotos</small></span></button>
-    <button onclick="go('#/nova')"><span class="qi">＋</span><span><b>Cadastrar cliente</b><small>Dados e anamnese</small></span></button>
+    <button onclick="apptModal()"><span class="qi">${ico('calendar-days')}</span><span><b>Agendar horário</b><small>Marcar na agenda</small></span></button>
+    <button onclick="sessionModal()"><span class="qi">${ico('notebook-pen')}</span><span><b>Registrar atendimento</b><small>Evolução e fotos</small></span></button>
+    <button onclick="go('#/nova')"><span class="qi">${ico('user-plus')}</span><span><b>Cadastrar cliente</b><small>Dados e anamnese</small></span></button>
   </div>
   <div class="dash">
-    <div class="card"><h3>▦ Agenda de hoje <a href="#/agenda" onclick="ui.agDay=today();ui.agMonth=today().slice(0,7)">abrir agenda →</a></h3>
+    <div class="card"><h3>Agenda de hoje <a href="#/agenda" onclick="ui.agDay=today();ui.agMonth=today().slice(0,7)">abrir agenda →</a></h3>
       ${hoje.length?hoje.map(a=>apptRowMini(a)).join(''):'<div class="none">Nenhum horário marcado para hoje. <a href="#" onclick="apptModal();return false">Agendar</a>.</div>'}
     </div>
     <div class="col">
@@ -625,9 +672,9 @@ function pRelac(r){
 /* ================= CLIENTES (lista) ================= */
 function pClientes(){
   return `<div class="ptitle"><div><h2>Clientes</h2><p>${plural(D.clients.length,'cliente cadastrada','clientes cadastradas')}</p></div>
-    <div class="act"><button class="btn" onclick="exportCSV()">⇩ Exportar lista</button><a class="btn primary" href="#/nova">＋ Nova cliente</a></div></div>
+    <div class="act"><button class="btn" onclick="exportCSV()">⇩ Exportar lista</button><a class="btn primary" href="#/nova">${ico('plus')}Nova cliente</a></div></div>
   ${D.clients.length?`<div class="filters"><input type="search" id="cq" placeholder="Filtrar por nome, telefone ou CPF…" value="${esc(ui.q)}"><span class="muted" id="ccount"></span></div><div id="ctbl"></div>`
-  :`<div class="card empty"><h2>Nenhuma cliente cadastrada ainda</h2><p>Comece cadastrando a primeira ficha.</p><p><a class="btn primary" href="#/nova">＋ Cadastrar primeira cliente</a></p></div>`}`;
+  :`<div class="card empty"><h2>Nenhuma cliente cadastrada ainda</h2><p>Comece cadastrando a primeira ficha.</p><p><a class="btn primary" href="#/nova">${ico('plus')}Cadastrar primeira cliente</a></p></div>`}`;
 }
 after.clientes=()=>{
   const cq=$('#cq');if(!cq)return;
@@ -646,7 +693,7 @@ function drawClientTable(){
       <td class="hide-m">${esc(age(c.nascimento))}</td><td class="hide-m">${esc(c.telefone||'—')}</td>
       <td>${u?`${fmtDate(u)} <span class="muted" style="font-size:12px">(${ago(u)})</span>`:'<span class="muted">—</span>'}</td>
       <td class="hide-m">${n}</td><td class="hide-m">${temAn?'<span class="pill g">completa</span>':'<span class="pill w">sem anamnese</span>'}</td></tr>`}).join('')}
-  </tbody></table>`:`<div class="card empty">Nenhuma cliente encontrada para “<b>${esc(ui.q)}</b>”. <p><a class="btn primary" href="#/nova">＋ Cadastrar nova cliente</a></p></div>`;
+  </tbody></table>`:`<div class="card empty">Nenhuma cliente encontrada para “<b>${esc(ui.q)}</b>”. <p><a class="btn primary" href="#/nova">${ico('plus')}Cadastrar nova cliente</a></p></div>`;
   $$('#ctbl th[data-k]').forEach(t=>t.onclick=()=>{if(ui.sort===t.dataset.k)ui.asc=!ui.asc;else{ui.sort=t.dataset.k;ui.asc=t.dataset.k==='nome'}drawClientTable()});
 }
 
@@ -695,10 +742,10 @@ function pCliente(r){
     ${avatar(c)}
     <div><h2>${esc(c.nome)}</h2><div class="meta">${[age(c.nascimento),c.telefone,ss[0]?'última visita '+ago(ss[0].data):'sem atendimentos',(()=>{const n=D.appointments.filter(a=>a.clientId===c.id&&a.status==='agendado'&&a.data>=today()).sort(apptSort)[0];return n?`próximo horário: ${fmtDate(n.data).slice(0,5)} às ${n.hora}`:''})()].filter(Boolean).map(esc).join(' · ')}</div></div>
     <div class="actions">
-      <button class="btn sm" onclick="apptModal(null,{clientId:'${c.id}'})">▦ Agendar</button>
-      <button class="btn primary sm" onclick="sessionModal(null,'${c.id}')">✎ Registrar atendimento</button>
+      <button class="btn sm" onclick="apptModal(null,{clientId:'${c.id}'})">${ico('calendar-days')}Agendar</button>
+      <button class="btn primary sm" onclick="sessionModal(null,'${c.id}')">${ico('notebook-pen')}Registrar atendimento</button>
       ${c.telefone&&c.whatsapp!==false?`<a class="btn sm" target="_blank" href="https://wa.me/55${esc(c.telefone.replace(/\D/g,'').replace(/^55(?=\d{10,11}$)/,''))}">WhatsApp</a>`:''}
-      <button class="btn sm" onclick="printFicha('${c.id}')">🖨 Imprimir ficha</button>
+      <button class="btn sm" onclick="printFicha('${c.id}')">${ico('printer')}Imprimir ficha</button>
       <button class="btn sm danger" onclick="deleteClient('${c.id}')">Excluir</button>
     </div>
   </div>`;
@@ -747,7 +794,7 @@ function anamneseForm(c){
       <div class="field" style="max-width:220px;margin-top:10px"><label>Data</label><input type="date" name="dataAnamnese" value="${esc(a.dataAnamnese||today())}"></div>
     </div>
 
-    <div class="section-t">Avaliação da pele <span class="muted" style="font-size:13px;font-family:sans-serif">— preenchido pela profissional</span></div>
+    <div class="section-t">Avaliação da pele <span class="muted" style="font-size:13px;font-family:var(--sans)">— preenchido pela profissional</span></div>
     <div class="aval">
       ${Object.entries(AVAL).map(([k,[l,o]])=>`<div class="arow"><div class="al">${l}</div>${chips(k,o,a[k])}${k==='espessura'?`<input class="mini" name="espessuraOutro" placeholder="Outra…" value="${esc(a.espessuraOutro)}">`:''}</div>`).join('')}
     </div>
@@ -759,11 +806,11 @@ function anamneseForm(c){
     <div class="section-t">Plano de tratamento</div>
     <div class="field"><textarea name="plano" style="min-height:110px" placeholder="Procedimentos indicados, número de sessões, frequência, cuidados em casa…">${esc(a.plano)}</textarea></div>
   </form>
-  <div class="formbar"><div class="card"><button class="btn" onclick="printFicha('${c.id}')">🖨 Imprimir para assinar</button><button class="btn primary" onclick="saveAnamnese('${c.id}')">Salvar anamnese</button></div></div>`;
+  <div class="formbar"><div class="card"><button class="btn" onclick="printFicha('${c.id}')">${ico('printer')}Imprimir para assinar</button><button class="btn primary" onclick="saveAnamnese('${c.id}')">Salvar anamnese</button></div></div>`;
 }
 const thumb=p=>`<div class="thumb" onclick="viewPhoto('${p.id}')"><img src="${blobURL(p.blob)}" loading="lazy"><span class="tag ${p.tipo}">${p.tipo}</span></div>`;
 function evolucao(c,ss){
-  let h=`<div class="toolbar"><span class="hint">Cada atendimento: o que foi feito, produtos, parâmetros e fotos da sessão.</span><button class="btn primary" onclick="sessionModal(null,'${c.id}')">＋ Registrar atendimento</button></div>`;
+  let h=`<div class="toolbar"><span class="hint">Cada atendimento: o que foi feito, produtos, parâmetros e fotos da sessão.</span><button class="btn primary" onclick="sessionModal(null,'${c.id}')">${ico('plus')}Registrar atendimento</button></div>`;
   if(!ss.length)return h+`<div class="card empty">Nenhum atendimento registrado ainda.</div>`;
   return h+'<div class="timeline">'+ss.map((s,i)=>{
     const ph=D.photos.filter(p=>p.sessionId===s.id).sort((a,b)=>(a.tipo==='antes'?0:1)-(b.tipo==='antes'?0:1));
@@ -810,7 +857,7 @@ function wirePhotoGrid(){
 /* ================= ATENDIMENTOS ================= */
 function pAtend(){
   const procs=[...new Set(D.sessions.map(s=>s.procedimento).filter(Boolean))].sort();
-  return `<div class="ptitle"><div><h2>Atendimentos</h2><p>Todos os procedimentos realizados no espaço</p></div><div class="act"><button class="btn primary" onclick="sessionModal()">＋ Registrar atendimento</button></div></div>
+  return `<div class="ptitle"><div><h2>Atendimentos</h2><p>Todos os procedimentos realizados no espaço</p></div><div class="act"><button class="btn primary" onclick="sessionModal()">${ico('plus')}Registrar atendimento</button></div></div>
   <div class="filters">
     <input type="search" id="aq" placeholder="Filtrar por cliente…" value="${esc(ui.aQ)}">
     <select id="aper">${[['hoje','Hoje'],['semana','Últimos 7 dias'],['mes','Este mês'],['30','Últimos 30 dias'],['ano','Este ano'],['tudo','Todo o período']].map(([v,l])=>`<option value="${v}" ${ui.aPer===v?'selected':''}>${l}</option>`).join('')}</select>
@@ -859,7 +906,7 @@ after.galeria=()=>{
 function pProc(){
   const cont={};D.sessions.forEach(s=>cont[s.procedimento]=(cont[s.procedimento]||0)+1);
   const byCat={};[...D.procedures].sort((a,b)=>norm(a.nome).localeCompare(norm(b.nome))).forEach(p=>(byCat[p.categoria||'Outros']=byCat[p.categoria||'Outros']||[]).push(p));
-  return `<div class="ptitle"><div><h2>Procedimentos</h2><p>Lista dos serviços do espaço. Eles aparecem como sugestão ao registrar um atendimento.</p></div><div class="act"><button class="btn primary" onclick="procModal()">＋ Novo procedimento</button></div></div>
+  return `<div class="ptitle"><div><h2>Procedimentos</h2><p>Lista dos serviços do espaço. Eles aparecem como sugestão ao registrar um atendimento.</p></div><div class="act"><button class="btn primary" onclick="procModal()">${ico('plus')}Novo procedimento</button></div></div>
   ${D.procedures.length?`<div class="dash" style="grid-template-columns:repeat(auto-fill,minmax(320px,1fr))">${CATEGORIAS.filter(k=>byCat[k]).concat(Object.keys(byCat).filter(k=>!CATEGORIAS.includes(k))).map(cat=>`<div class="card proc-list"><h3>${esc(cat)}</h3>
     ${byCat[cat].map(p=>`<div class="li"><div class="t"><b>${esc(p.nome)}</b><small>${p.descricao?esc(p.descricao)+' · ':''}${plural(cont[p.nome]||0,'atendimento','atendimentos')}</small></div><button class="btn ghost sm" onclick="procModal('${p.id}')">Editar</button></div>`).join('')}
   </div>`).join('')}</div>`:`<div class="card empty">Nenhum procedimento cadastrado.</div>`}`;
@@ -1084,7 +1131,7 @@ function apptRowMini(a){
 function pAgenda(){
   ui.agDay=ui.agDay||today();ui.agMonth=ui.agMonth||ui.agDay.slice(0,7);
   return `<div class="ptitle"><div><h2>Agenda</h2><p>Clique em um dia para ver os horários marcados</p></div>
-    <div class="act"><button class="btn primary" onclick="apptModal(null,{data:ui.agDay})">＋ Agendar horário</button></div></div>
+    <div class="act"><button class="btn primary" onclick="apptModal(null,{data:ui.agDay})">${ico('plus')}Agendar horário</button></div></div>
   <div class="agenda"><div class="card cal" id="cal"></div><div class="col"><div class="card" id="dayBox"></div><div class="card" id="nextBox"></div></div></div>`;
 }
 after.agenda=()=>drawAgenda();
@@ -1133,7 +1180,7 @@ function apptRow(a){
       <div class="acts">
         ${a.status==='agendado'?`<button class="btn sm primary" onclick="concluirAppt('${a.id}')">✓ Realizado</button><button class="btn sm" onclick="setApptStatus('${a.id}','faltou')">Faltou</button><button class="btn sm" onclick="setApptStatus('${a.id}','cancelado')">Cancelar</button>${tel?`<a class="btn sm" target="_blank" href="https://wa.me/55${tel}?text=${encodeURIComponent(msg)}">Lembrar no WhatsApp</a>`:''}`
           :`<span class="pill ${cls}">${l}</span>${a.sessionId&&c?`<a class="btn sm ghost" href="#/cliente/${c.id}/evolucao">ver atendimento</a>`:`<button class="btn sm ghost" onclick="setApptStatus('${a.id}','agendado')">desfazer</button>`}`}
-        ${c?'':`<button class="btn sm" onclick="cadastrarAvulso('${a.id}')">＋ Fazer cadastro</button>`}
+        ${c?'':`<button class="btn sm" onclick="cadastrarAvulso('${a.id}')">${ico('plus')}Fazer cadastro</button>`}
         <button class="btn sm ghost" onclick="apptModal('${a.id}')">Editar</button>
       </div>
     </div>
