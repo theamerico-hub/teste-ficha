@@ -2,8 +2,17 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Sistema de Fichas — Espaço de Estética</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Luana Monteiro — Sistema de fichas</title>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Luana Monteiro">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="application-name" content="Luana Monteiro">
+<meta name="theme-color" content="#f6f2ee">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" type="image/png" href="favicon.png">
+<link rel="manifest" href="manifest.webmanifest">
 <style>
 :root{
   --bg:#f6f2ee; --card:#fff; --ink:#2f2a27; --muted:#8a7f78; --line:#ebe3dc;
@@ -22,7 +31,7 @@ a{color:inherit}
 .shell{display:flex;min-height:100vh}
 .side{width:240px;flex:none;background:var(--side);color:var(--side-ink);display:flex;flex-direction:column;position:sticky;top:0;height:100vh;z-index:30}
 .side .brand{display:flex;gap:10px;align-items:center;padding:22px 18px 18px}
-.logo{width:38px;height:38px;border-radius:50%;background:var(--rose);color:#fff;display:grid;place-items:center;font-family:Georgia,serif;font-size:19px;flex:none}
+.logo{width:38px;height:38px;border-radius:50%;background:var(--rose);color:#fff;display:grid;place-items:center;font-family:Georgia,serif;font-style:italic;font-size:15px;letter-spacing:.02em;flex:none;box-shadow:inset 0 0 0 2px var(--rose),inset 0 0 0 3px rgba(255,255,255,.7)}
 .side .brand b{display:block;color:#fff;font-family:Georgia,serif;font-weight:normal;font-size:16px;line-height:1.2}
 .side .brand small{font-size:11px;opacity:.7}
 .nav{display:flex;flex-direction:column;gap:2px;padding:6px 10px;flex:1}
@@ -34,7 +43,7 @@ a{color:inherit}
 .nav a .cnt{margin-left:auto;font-size:11px;opacity:.7}
 .side .foot{padding:14px 18px;font-size:11px;opacity:.6;border-top:1px solid rgba(255,255,255,.08)}
 .main{flex:1;min-width:0;display:flex;flex-direction:column}
-.topbar{display:flex;align-items:center;gap:12px;padding:14px 28px;background:rgba(246,242,238,.92);backdrop-filter:blur(6px);position:sticky;top:0;z-index:20;border-bottom:1px solid var(--line)}
+.topbar{display:flex;align-items:center;gap:12px;padding:calc(14px + env(safe-area-inset-top)) 28px 14px;background:rgba(246,242,238,.92);backdrop-filter:blur(6px);position:sticky;top:0;z-index:20;border-bottom:1px solid var(--line)}
 .topbar .menu{display:none}
 .gsearch{flex:1;max-width:560px;min-width:0;position:relative}
 .gsearch input{width:100%;padding:10px 14px 10px 38px;border:1px solid var(--line);border-radius:11px;background:#fff}
@@ -224,6 +233,8 @@ input:focus,select:focus,textarea:focus{outline:2px solid var(--rose-l);border-c
 .appt .acts{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;align-items:center}
 .appt.cancelado .t b,.appt.cancelado .hr{text-decoration:line-through;opacity:.6}
 .pill.x{background:#eee;color:#777}
+.swap{display:inline-block;margin-top:6px;font-size:13px;color:var(--rose-d)}
+#avBox input{padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:#fff;width:100%}
 
 
 /* modais */
@@ -269,7 +280,8 @@ input:focus,select:focus,textarea:focus{outline:2px solid var(--rose-l);border-c
   .side{position:fixed;left:0;top:0;transform:translateX(-100%);transition:.2s}
   .side.open{transform:none;box-shadow:0 0 40px rgba(0,0,0,.3)}
   .scrim.on{display:block;position:fixed;inset:0;background:rgba(0,0,0,.3);z-index:25}
-  .topbar{padding:12px 14px}
+  .topbar{padding:calc(12px + env(safe-area-inset-top)) 14px 12px}
+  .side .brand{padding-top:calc(22px + env(safe-area-inset-top))}
   .topbar .menu{display:inline-flex}
   .topbar .btn .t{display:none}
   .topbar .hide-sm{display:none}
@@ -355,7 +367,8 @@ function daysSince(d){return d?Math.floor((new Date(today())-new Date(d))/864e5)
 function ago(d){const n=daysSince(d);if(n===null)return'';if(n<=0)return'hoje';if(n===1)return'ontem';if(n<30)return`há ${n} dias`;const m=Math.floor(n/30);return m<12?`há ${plural(m,'mês','meses')}`:`há ${plural(Math.floor(m/12),'ano','anos')}`}
 function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('on');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('on'),2400)}
 const LS={get:(k,d)=>{try{const v=localStorage.getItem(k);return v===null?d:JSON.parse(v)}catch{return d}},set:(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch{}}};
-const settings=()=>LS.get('fe-settings',{nome:'Espaço de Estética',pin:''});
+const NOME_PADRAO='Luana Monteiro';
+const settings=()=>{const s=LS.get('fe-settings',{nome:NOME_PADRAO,pin:''});if(!s.nome||s.nome==='Espaço de Estética')s.nome=NOME_PADRAO;return s};
 
 let urls=[];
 function blobURL(b){const u=URL.createObjectURL(b);urls.push(u);return u}
@@ -437,7 +450,7 @@ function render(){
   const inCli=['clientes','cliente','nova'].includes(r.page);
   $('#root').innerHTML=`<div class="shell">
     <aside class="side" id="side">
-      <div class="brand"><div class="logo">${esc(initials(s.nome).slice(0,1)||'E')}</div><div><b>${esc(s.nome)}</b><small>Sistema de fichas</small></div></div>
+      <div class="brand"><div class="logo">${esc(initials(s.nome)||'LM')}</div><div><b>${esc(s.nome)}</b><small>Estética · Sistema de fichas</small></div></div>
       <nav class="nav">
         ${nav('#/painel','◧','Painel',undefined,r.page==='painel')}
         <div class="grp">Clientes</div>
@@ -467,7 +480,7 @@ function render(){
     </div>
   </div>`;
   const pages={painel:pPainel,agenda:pAgenda,clientes:pClientes,nova:pNova,cliente:pCliente,atendimentos:pAtend,galeria:pGaleria,procedimentos:pProc,ajustes:pAjustes};
-  $('#content').innerHTML=backupBanner()+(pages[r.page]||pPainel)(r);
+  $('#content').innerHTML=installBanner()+backupBanner()+(pages[r.page]||pPainel)(r);
   wireShell();
   (after[r.page]||(()=>{}))(r);
 }
@@ -497,6 +510,12 @@ function searchClients(q){
   q=norm(q).trim();const qd=q.replace(/\D/g,'');
   if(!q)return[...D.clients];
   return D.clients.filter(c=>norm(c.nome).includes(q)||(qd.length>=3&&(((c.telefone||'').replace(/\D/g,'').includes(qd))||((c.cpf||'').replace(/\D/g,'').includes(qd)))));
+}
+function installBanner(){
+  const ios=/iphone|ipad|ipod/i.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+  const inst=window.navigator.standalone||matchMedia('(display-mode: standalone)').matches;
+  if(!ios||inst||LS.get('fe-noinstall',false))return'';
+  return `<div class="banner" style="background:var(--rose-l);border-color:#ecd3c8;color:var(--rose-d)"><span>📲 <b>Coloque o sistema na tela de início:</b> no Safari, toque em <b>Compartilhar</b> (o quadrado com a seta para cima) e depois em <b>“Adicionar à Tela de Início”</b>.</span><button class="btn sm" onclick="LS.set('fe-noinstall',true);render()">Ok</button></div>`;
 }
 function backupBanner(){
   if(!D.clients.some(c=>!c.demo))return'';
@@ -611,7 +630,7 @@ function dadosForm(c={}){
 function pNova(){
   return `<div class="ptitle"><div><h2>Cadastrar cliente</h2><p>Passo 1 de 2 — dados pessoais. Em seguida você preenche a anamnese.</p></div></div>
   ${dadosForm()}
-  <div class="formbar"><div class="card"><a class="btn" href="#/clientes">Cancelar</a><button class="btn primary" onclick="saveDados(true)">Salvar e ir para anamnese →</button></div></div>`;
+  <div class="formbar"><div class="card"><a class="btn" href="#/clientes" onclick="ui.linkAppt=null">Cancelar</a><button class="btn primary" onclick="saveDados(true)">Salvar e ir para anamnese →</button></div></div>`;
 }
 after.nova=()=>{
   const n=$('[name=nome]');n.focus();
@@ -857,7 +876,7 @@ after.ajustes=async()=>{
 function saveSettings(){
   const pin=$('#sPin').value.trim();
   if(pin&&!/^\d{4,8}$/.test(pin))return toast('A senha deve ter de 4 a 8 números');
-  LS.set('fe-settings',{...settings(),nome:$('#sNome').value.trim()||'Espaço de Estética',pin});render();toast('Ajustes salvos ✓');
+  LS.set('fe-settings',{...settings(),nome:$('#sNome').value.trim()||NOME_PADRAO,pin});render();toast('Ajustes salvos ✓');
 }
 
 /* ================= AÇÕES: clientes ================= */
@@ -866,7 +885,10 @@ async function saveDados(isNew,id){
   if(!d.nome.trim()){toast('Informe o nome da cliente');f.nome.focus();return}
   const c=isNew?{id:uid(),criado:Date.now(),anamnese:{}}:client(id);
   Object.assign(c,d,{nome:d.nome.trim(),whatsapp:!!d.whatsapp,atualizado:Date.now()});
-  await DB.put('clients',c);await load();toast('Dados salvos ✓');
+  await DB.put('clients',c);
+  if(isNew&&ui.linkAppt){const a=D.appointments.find(x=>x.id===ui.linkAppt);if(a){a.clientId=c.id;a.avulsoNome='';a.avulsoTel='';await DB.put('appointments',a)}}
+  if(isNew)ui.linkAppt=null;
+  await load();toast('Dados salvos ✓');
   if(isNew)go(`#/cliente/${c.id}/anamnese`);else render();
 }
 async function saveAnamnese(id){
@@ -915,12 +937,14 @@ function modal(html,cls=''){
 function closeModal(){$$('.modal-bg').forEach(m=>m.remove());pending=[]}
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&$('.modal-bg'))closeModal()});
 
-function wirePicker(m){
+function wirePicker(m,onAvulso){
   const pq=$('#pickQ',m),po=$('#pickO',m),hid=$('[name=clientId]',m);
   const drawOpts=()=>{const l=searchClients(pq.value).sort((a,b)=>norm(a.nome).localeCompare(norm(b.nome))).slice(0,8);
     po.innerHTML=l.map(x=>`<div data-id="${x.id}">${esc(x.nome)} <span class="muted" style="font-size:12px">${esc(x.telefone||'')}</span></div>`).join('')||`<div data-new>＋ Cadastrar “${esc(pq.value)}” como nova cliente</div>`;
+    if(onAvulso&&pq.value.trim())po.innerHTML+=`<div data-av>◌ Agendar “${esc(pq.value)}” sem cadastro</div>`;
     po.classList.add('on');
     $$('div',po).forEach(o=>o.onmousedown=e=>{e.preventDefault();
+      if(o.dataset.av!==undefined){po.classList.remove('on');onAvulso(pq.value.trim());return}
       if(o.dataset.new!==undefined){const v=pq.value;closeModal();go('#/nova');setTimeout(()=>{const n=$('[name=nome]');if(n)n.value=v},50);return}
       hid.value=o.dataset.id;pq.value=client(o.dataset.id).nome;po.classList.remove('on');pq.dispatchEvent(new Event('picked'))})};
   pq.oninput=()=>{hid.value='';drawOpts()};pq.onfocus=drawOpts;pq.onblur=()=>setTimeout(()=>po.classList.remove('on'),120);
@@ -1014,8 +1038,8 @@ const fimHora=a=>{const m=toMin(a.hora)+(+a.duracao||60);return String(Math.floo
 const cap1=t=>t.charAt(0).toUpperCase()+t.slice(1);
 const diaLongo=d=>cap1(new Date(d+'T12:00').toLocaleDateString('pt-BR',{weekday:'long',day:'numeric',month:'long'}));
 function apptRowMini(a){
-  const c=client(a.clientId);if(!c)return'';const [l,cls]=STATUS[a.status]||STATUS.agendado;
-  return `<div class="li" onclick="ui.agDay='${a.data}';ui.agMonth='${a.data.slice(0,7)}';go('#/agenda')"><div class="hr">${esc(a.hora)}</div><div class="t"><b>${esc(c.nome)}</b><small>${esc(a.procedimento||'Atendimento')}</small></div>${a.status!=='agendado'?`<span class="pill ${cls}">${l}</span>`:''}</div>`;
+  const c=client(a.clientId);if(!c&&!a.avulsoNome)return'';const [l,cls]=STATUS[a.status]||STATUS.agendado;
+  return `<div class="li" onclick="ui.agDay='${a.data}';ui.agMonth='${a.data.slice(0,7)}';go('#/agenda')"><div class="hr">${esc(a.hora)}</div><div class="t"><b>${esc(apptNome(a))}</b><small>${esc(a.procedimento||'Atendimento')}${c?'':' · sem cadastro'}</small></div>${a.status!=='agendado'?`<span class="pill ${cls}">${l}</span>`:''}</div>`;
 }
 function pAgenda(){
   ui.agDay=ui.agDay||today();ui.agMonth=ui.agMonth||ui.agDay.slice(0,7);
@@ -1035,7 +1059,7 @@ function drawAgenda(){
     const l=apptsOn(d).filter(a=>a.status!=='cancelado');
     cells+=`<button class="day ${out?'out':''} ${d===t?'today':''} ${d===ui.agDay?'sel':''}" data-d="${d}">
       <span class="n">${+d.slice(8)}</span>
-      ${l.length?`<span class="cnt">${l.length}</span><span class="chips-m">${l.slice(0,3).map(a=>`<span class="ev ${a.status}">${esc(a.hora)} ${esc((client(a.clientId)?.nome||'').split(' ')[0])}</span>`).join('')}${l.length>3?`<span class="more">+${l.length-3}</span>`:''}</span>`:''}
+      ${l.length?`<span class="cnt">${l.length}</span><span class="chips-m">${l.slice(0,3).map(a=>`<span class="ev ${a.status}">${esc(a.hora)} ${esc(apptNome(a).split(' ')[0])}</span>`).join('')}${l.length>3?`<span class="more">+${l.length-3}</span>`:''}</span>`:''}
     </button>`;
   }
   $('#cal').innerHTML=`<div class="calh"><button class="btn ghost sm" data-nav="-1">‹</button><h3>${nomeMes}</h3><button class="btn ghost sm" data-nav="1">›</button><button class="btn sm" data-nav="0" style="margin-left:auto">Hoje</button></div>
@@ -1058,31 +1082,47 @@ function drawAgenda(){
   $('#nextBox').innerHTML=h;
 }
 function apptRow(a){
-  const c=client(a.clientId);if(!c)return'';const [l,cls]=STATUS[a.status]||STATUS.agendado;
-  const tel=(c.telefone||'').replace(/\D/g,'').replace(/^55(?=\d{10,11}$)/,'');
-  const msg=`Olá, ${c.nome.split(' ')[0]}! Passando para lembrar do seu horário de ${a.procedimento||'atendimento'} no ${settings().nome}, ${diaLongo(a.data)}, às ${a.hora}. Podemos confirmar?`;
+  const c=client(a.clientId);if(!c&&!a.avulsoNome)return'';const [l,cls]=STATUS[a.status]||STATUS.agendado;
+  const nome=apptNome(a);
+  const tel=(apptTel(a)||'').replace(/\D/g,'').replace(/^55(?=\d{10,11}$)/,'');
+  const msg=`Olá, ${nome.split(' ')[0]}! Passando para lembrar do seu horário de ${a.procedimento||'atendimento'} no ${settings().nome}, ${diaLongo(a.data)}, às ${a.hora}. Podemos confirmar?`;
+  const quem=c?`<a href="#/cliente/${c.id}"><b>${esc(nome)}</b></a>${ALERTA_ICON(c)}`:`<b>${esc(nome)}</b>${AVULSO_TAG}`;
   return `<div class="appt ${a.status}">
     <div class="hr">${esc(a.hora)}<small>até ${fimHora(a)}</small></div>
-    <div class="t"><a href="#/cliente/${c.id}"><b>${esc(c.nome)}</b></a>${ALERTA_ICON(c)}<small>${esc(a.procedimento||'Atendimento')}${a.obs?' · '+esc(a.obs):''}</small>
+    <div class="t">${quem}<small>${esc(a.procedimento||'Atendimento')}${a.obs?' · '+esc(a.obs):''}${!c&&a.avulsoTel?' · '+esc(a.avulsoTel):''}</small>
       <div class="acts">
-        ${a.status==='agendado'?`<button class="btn sm primary" onclick="concluirAppt('${a.id}')">✓ Realizado</button><button class="btn sm" onclick="setApptStatus('${a.id}','faltou')">Faltou</button><button class="btn sm" onclick="setApptStatus('${a.id}','cancelado')">Cancelar</button>${tel&&c.whatsapp!==false?`<a class="btn sm" target="_blank" href="https://wa.me/55${tel}?text=${encodeURIComponent(msg)}">Lembrar no WhatsApp</a>`:''}`
-          :`<span class="pill ${cls}">${l}</span>${a.sessionId?`<a class="btn sm ghost" href="#/cliente/${c.id}/evolucao">ver atendimento</a>`:`<button class="btn sm ghost" onclick="setApptStatus('${a.id}','agendado')">desfazer</button>`}`}
+        ${a.status==='agendado'?`<button class="btn sm primary" onclick="concluirAppt('${a.id}')">✓ Realizado</button><button class="btn sm" onclick="setApptStatus('${a.id}','faltou')">Faltou</button><button class="btn sm" onclick="setApptStatus('${a.id}','cancelado')">Cancelar</button>${tel?`<a class="btn sm" target="_blank" href="https://wa.me/55${tel}?text=${encodeURIComponent(msg)}">Lembrar no WhatsApp</a>`:''}`
+          :`<span class="pill ${cls}">${l}</span>${a.sessionId&&c?`<a class="btn sm ghost" href="#/cliente/${c.id}/evolucao">ver atendimento</a>`:`<button class="btn sm ghost" onclick="setApptStatus('${a.id}','agendado')">desfazer</button>`}`}
+        ${c?'':`<button class="btn sm" onclick="cadastrarAvulso('${a.id}')">＋ Fazer cadastro</button>`}
         <button class="btn sm ghost" onclick="apptModal('${a.id}')">Editar</button>
       </div>
     </div>
   </div>`;
 }
+const apptNome=a=>client(a.clientId)?.nome||a.avulsoNome||'Cliente removida';
+const apptTel=a=>{const c=client(a.clientId);return c?(c.whatsapp!==false?c.telefone:''):(a.avulsoTel||'')};
+const AVULSO_TAG=' <span class="pill w" title="Ainda não tem ficha no sistema">sem cadastro</span>';
 const ALERTA_ICON=c=>Object.keys(ALERTAS).some(k=>c.anamnese?.[k]==='sim')?' <span title="Possui alerta na anamnese" style="color:var(--danger)">⚠</span>':'';
 function apptModal(id,pre={}){
   const a=id?D.appointments.find(x=>x.id===id):{data:pre.data||today(),hora:'',duracao:60,clientId:pre.clientId||(route().page==='cliente'?route().id:''),status:'agendado'};
   const c=client(a.clientId);
+  const av=!c&&!!a.avulsoNome;
   const sug=[...new Set([...D.procedures.map(p=>p.nome),...D.sessions.map(x=>x.procedimento)].filter(Boolean))].sort();
   const horas=[];for(let h=7;h<=21;h++)for(const mm of ['00','30'])horas.push(`${String(h).padStart(2,'0')}:${mm}`);
   const m=modal(`<h3>${id?'Editar agendamento':'Agendar horário'}</h3>
     <form id="fAppt" class="grid" onsubmit="return false">
-      <div class="field full picker"><label>Cliente *</label>
+      <div class="field full picker" id="cliBox" ${av?'style="display:none"':''}><label>Cliente *</label>
         <input id="pickQ" placeholder="Digite o nome da cliente…" value="${esc(c?.nome||'')}" autocomplete="off">
-        <input type="hidden" name="clientId" value="${esc(a.clientId||'')}"><div class="opts" id="pickO"></div></div>
+        <input type="hidden" name="clientId" value="${esc(a.clientId||'')}"><div class="opts" id="pickO"></div>
+        <a href="#" class="swap" id="toAv">Pessoa ainda não cadastrada? Agendar sem cadastro</a></div>
+      <div class="field full" id="avBox" ${av?'':'style="display:none"'}>
+        <label>Pessoa sem cadastro</label>
+        <div class="grid" style="grid-template-columns:1fr 1fr;gap:10px">
+          <input name="avulsoNome" placeholder="Nome *" value="${esc(a.avulsoNome)}">
+          <input name="avulsoTel" type="tel" placeholder="WhatsApp (opcional)" value="${esc(a.avulsoTel)}">
+        </div>
+        <a href="#" class="swap" id="toCli">Escolher uma cliente já cadastrada</a></div>
+      <input type="hidden" name="modo" value="${av?'avulso':'cliente'}">
       <div class="field"><label>Data *</label><input type="date" name="data" value="${esc(a.data)}"></div>
       <div class="field"><label>Horário *</label><input name="hora" list="horas" value="${esc(a.hora)}" placeholder="Ex: 14:00" inputmode="numeric"><datalist id="horas">${horas.map(h=>`<option>${h}</option>`).join('')}</datalist></div>
       <div class="field"><label>Duração</label><select name="duracao">${[30,45,60,90,120,180].map(d=>`<option value="${d}" ${+a.duracao===d?'selected':''}>${d<60?d+' min':(d/60)+'h'+(d%60?'30':'')}</option>`).join('')}</select></div>
@@ -1091,22 +1131,30 @@ function apptModal(id,pre={}){
     </form>
     <div id="apptWarn"></div>
     <div class="mbar">${id?`<button class="btn danger" style="margin-right:auto" onclick="deleteAppt('${id}')">Excluir</button>`:''}<button class="btn" onclick="closeModal()">Cancelar</button><button class="btn primary" id="aSave">Salvar</button></div>`);
-  const pq=wirePicker(m);
+  const modo=$('[name=modo]',m);
+  const setModo=(v,nome)=>{modo.value=v;$('#cliBox',m).style.display=v==='avulso'?'none':'';$('#avBox',m).style.display=v==='avulso'?'':'none';
+    if(v==='avulso'){const n=$('[name=avulsoNome]',m);if(nome)n.value=nome;n.focus();$('#apptWarn',m).innerHTML=''}else $('#pickQ',m).focus()};
+  const pq=wirePicker(m,nome=>setModo('avulso',nome));
+  $('#toAv',m).onclick=e=>{e.preventDefault();setModo('avulso',pq.value.trim())};
+  $('#toCli',m).onclick=e=>{e.preventDefault();setModo('cliente')};
+  const tl=$('[name=avulsoTel]',m);tl.oninput=()=>{let d=tl.value.replace(/\D/g,'').slice(0,11);tl.value=d.length>10?`(${d.slice(0,2)}) ${d.slice(2,7)}-${d.slice(7)}`:d.length>6?`(${d.slice(0,2)}) ${d.slice(2,6)}-${d.slice(6)}`:d.length>2?`(${d.slice(0,2)}) ${d.slice(2)}`:d};
   const warn=()=>{const cl=client($('[name=clientId]',m).value);$('#apptWarn',m).innerHTML=cl?alertas(cl):''};
   pq.addEventListener('picked',warn);warn();
   const hr=$('[name=hora]',m);hr.addEventListener('blur',()=>{const d=hr.value.replace(/\D/g,'');if(/^\d{3,4}$/.test(d))hr.value=d.padStart(4,'0').replace(/(\d\d)(\d\d)/,'$1:$2');else if(/^\d{1,2}$/.test(d))hr.value=d.padStart(2,'0')+':00'});
-  setTimeout(()=>(a.clientId?hr:pq).focus(),30);
+  setTimeout(()=>(a.clientId||av?hr:pq).focus(),30);
   $('#aSave',m).onclick=()=>saveAppt(id);
 }
 async function saveAppt(id){
   const d=Object.fromEntries(new FormData($('#fAppt')));
-  if(!d.clientId)return toast('Escolha a cliente na lista');
+  const avulso=d.modo==='avulso';delete d.modo;
+  if(avulso){d.avulsoNome=(d.avulsoNome||'').trim();if(!d.avulsoNome)return toast('Informe o nome da pessoa');d.clientId=''}
+  else{if(!d.clientId)return toast('Escolha a cliente na lista (ou agende sem cadastro)');d.avulsoNome='';d.avulsoTel=''}
   if(!d.data)return toast('Informe a data');
   if(!/^([01]\d|2[0-3]):[0-5]\d$/.test(d.hora))return toast('Informe o horário no formato 14:00');
   d.duracao=+d.duracao;
   const ini=toMin(d.hora),fim=ini+d.duracao;
   const choque=D.appointments.filter(x=>x.id!==id&&x.data===d.data&&x.status==='agendado').find(x=>{const a=toMin(x.hora),b=a+(+x.duracao||60);return ini<b&&a<fim});
-  if(choque&&!confirm(`Já existe um horário com ${client(choque.clientId)?.nome||'outra cliente'} das ${choque.hora} às ${fimHora(choque)}.\n\nAgendar mesmo assim?`))return;
+  if(choque&&!confirm(`Já existe um horário com ${apptNome(choque)} das ${choque.hora} às ${fimHora(choque)}.\n\nAgendar mesmo assim?`))return;
   const a=id?D.appointments.find(x=>x.id===id):{id:uid(),status:'agendado',criado:Date.now()};
   Object.assign(a,d);await DB.put('appointments',a);
   if(a.procedimento&&!D.procedures.some(p=>norm(p.nome)===norm(a.procedimento)))await DB.put('procedures',{id:uid(),nome:a.procedimento,categoria:'Outros'});
@@ -1118,7 +1166,15 @@ async function setApptStatus(id,st){
   const a=D.appointments.find(x=>x.id===id);a.status=st;await DB.put('appointments',a);await load();render();
   toast(st==='agendado'?'Agendamento reaberto':`Marcado como ${STATUS[st][0].toLowerCase()}`);
 }
-function concluirAppt(id){const a=D.appointments.find(x=>x.id===id);sessionModal(null,a.clientId,{data:a.data,procedimento:a.procedimento,apptId:a.id})}
+function cadastrarAvulso(id,msg){
+  const a=D.appointments.find(x=>x.id===id);ui.linkAppt=id;
+  go('#/nova');
+  setTimeout(()=>{const n=$('[name=nome]'),t=$('[name=telefone]');if(n)n.value=a.avulsoNome||'';if(t){t.value=a.avulsoTel||''}
+    if(msg)toast(msg)},60);
+}
+function concluirAppt(id){const a=D.appointments.find(x=>x.id===id);
+  if(!client(a.clientId))return cadastrarAvulso(id,'Para registrar o atendimento, primeiro faça o cadastro da cliente');
+  sessionModal(null,a.clientId,{data:a.data,procedimento:a.procedimento,apptId:a.id})}
 async function deleteAppt(id){if(!confirm('Excluir este agendamento?'))return;await DB.del('appointments',id);await load();closeModal();render();toast('Agendamento excluído')}
 
 /* ================= impressão ================= */
@@ -1207,6 +1263,7 @@ async function loadDemo(){
     for(let k=0;k<qtd;k++){const ci=(n++)%nomes.length;
       await DB.put('appointments',{id:`demo_a${d}_${k}`,demo:true,clientId:'demo_c'+ci,data:dia,hora:horas[(k*2+d+9)%5],duracao:60,procedimento:procs[(ci+k)%5],obs:'',status:d<0?(k===1?'faltou':'realizado'):'agendado',criado:Date.now()})}
   }
+  await DB.put('appointments',{id:'demo_av1',demo:true,clientId:'',avulsoNome:'Camila Rocha',avulsoTel:'(81) 98888-0000',data:addDays(today(),1),hora:'11:30',duracao:60,procedimento:'Avaliação facial',obs:'Primeira visita',status:'agendado',criado:Date.now()});
   await load();go('#/painel');render();toast('Exemplos carregados ✓');
 }
 async function clearDemo(){
@@ -1219,7 +1276,7 @@ async function clearDemo(){
 function lockScreen(){
   return new Promise(res=>{
     const s=settings();if(!s.pin)return res();
-    $('#root').innerHTML=`<div class="lock"><div class="card"><div class="logo" style="margin:0 auto 10px">${esc(initials(s.nome).slice(0,1))}</div><h2>${esc(s.nome)}</h2><input id="pin" type="password" inputmode="numeric" placeholder="••••"><button class="btn primary" style="width:100%;justify-content:center" id="pinOk">Entrar</button><p class="muted" id="pinMsg" style="font-size:13px"></p></div></div>`;
+    $('#root').innerHTML=`<div class="lock"><div class="card"><div class="logo" style="margin:0 auto 10px">${esc(initials(s.nome)||'LM')}</div><h2>${esc(s.nome)}</h2><input id="pin" type="password" inputmode="numeric" placeholder="••••"><button class="btn primary" style="width:100%;justify-content:center" id="pinOk">Entrar</button><p class="muted" id="pinMsg" style="font-size:13px"></p></div></div>`;
     const ok=()=>{if($('#pin').value===s.pin)res();else{$('#pinMsg').textContent='Senha incorreta';$('#pin').value=''}};
     $('#pinOk').onclick=ok;$('#pin').onkeydown=e=>e.key==='Enter'&&ok();$('#pin').focus();
   });

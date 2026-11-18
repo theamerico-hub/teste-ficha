@@ -1,4 +1,4 @@
-# Sistema de fichas — versão de teste
+# Luana Monteiro — Sistema de fichas (versão de teste)
 
 Protótipo do sistema de fichas para espaço de estética (cadastro de clientes, anamnese, evolução e fotos de antes e depois).
 
@@ -6,3 +6,4 @@ Protótipo do sistema de fichas para espaço de estética (cadastro de clientes,
 - Os dados ficam salvos só no navegador de quem está testando.
 - No painel, use **"Carregar exemplos"** para ver o sistema preenchido.
 - Use apenas dados de teste nesta versão.
+- No iPhone: abra no Safari, toque em **Compartilhar** e depois em **"Adicionar à Tela de Início"** para ter o ícone do sistema.
