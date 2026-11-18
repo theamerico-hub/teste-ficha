@@ -205,6 +205,13 @@ input:focus,select:focus,textarea:focus{outline:2px solid var(--rose-l);border-c
 .pend .ctr{padding:6px;display:flex;flex-direction:column;gap:4px}
 .pend select,.pend input{width:100%;padding:4px 6px;border:1px solid var(--line);border-radius:6px;font-size:12px}
 .proc-list .li{cursor:default}
+.banner.sm{padding:7px 12px;font-size:13px}
+.card.narrow{max-width:640px}
+.remind{display:block;text-decoration:none;background:var(--rose-l);box-shadow:none;border:1px solid #ecd3c8;color:var(--rose-d);font-size:14px;padding:14px 18px}
+.remind div{margin:2px 0;color:var(--ink)}
+.remind span{display:block;margin-top:6px;font-size:13px}
+.li .btn{flex:none}
+.bnav{display:none}
 .agenda{display:grid;grid-template-columns:1.5fr 1fr;gap:16px;align-items:start}
 .cal .calh{display:flex;align-items:center;gap:6px;margin-bottom:10px}
 .cal .calh h3{margin:0;min-width:170px;text-align:center}
@@ -275,6 +282,9 @@ input:focus,select:focus,textarea:focus{outline:2px solid var(--rose-l);border-c
   .kpis{grid-template-columns:repeat(2,1fr)}
   .dash{grid-template-columns:1fr}
   .agenda{grid-template-columns:1fr}
+  .quick{grid-template-columns:1fr 1fr 1fr}
+  .quick button{flex-direction:column;text-align:center;gap:6px;padding:12px 6px}
+  .quick small{display:none}
 }
 @media (max-width:860px){
   .side{position:fixed;left:0;top:0;transform:translateX(-100%);transition:.2s}
@@ -287,11 +297,23 @@ input:focus,select:focus,textarea:focus{outline:2px solid var(--rose-l);border-c
   .topbar .hide-sm{display:none}
   .topbar .sp{display:none}
   .content{padding:18px 14px 70px}
-  .quick{grid-template-columns:1fr}
   .cmp{grid-template-columns:1fr}
   .qgrid{grid-template-columns:1fr}
   .arow .al{width:100%}
   .tbl .hide-m{display:none}
+  .kpis{gap:10px}
+  .kpi{padding:12px 14px}
+  .kpi .v{font-size:26px;margin-top:2px}
+  .kpi .l{font-size:11px}
+  .bnav{display:flex;position:fixed;left:0;right:0;bottom:0;z-index:22;background:rgba(255,255,255,.97);backdrop-filter:blur(8px);border-top:1px solid var(--line);padding:6px 4px calc(6px + env(safe-area-inset-bottom))}
+  .bnav a{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:11px;color:var(--muted);text-decoration:none;padding:4px 0;border-radius:10px}
+  .bnav a span{font-size:18px;line-height:1.1}
+  .bnav a.on{color:var(--rose-d);font-weight:600}
+  .content{padding-bottom:calc(90px + env(safe-area-inset-bottom))}
+  .toast{bottom:calc(84px + env(safe-area-inset-bottom))}
+  .formbar{bottom:calc(76px + env(safe-area-inset-bottom))}
+  .topbar .menu{display:none}
+  .li .r{display:none}
   .cal .day{min-height:52px;padding:4px;align-items:center}
   .cal .day .chips-m{display:none}
   .cal .day .cnt{display:block;position:static;margin-top:2px}
@@ -456,17 +478,22 @@ function render(){
         <div class="grp">Clientes</div>
         ${nav('#/clientes','☺','Clientes',D.clients.length,inCli&&r.page!=='nova')}
         ${nav('#/nova','＋','Cadastrar cliente',undefined,r.page==='nova')}
+        ${nav('#/relacionamento','♡','Relacionamento',undefined,r.page==='relacionamento')}
         <div class="grp">Atendimento</div>
         ${nav('#/agenda','▦','Agenda',D.appointments.filter(a=>a.status==='agendado'&&a.data>=today()).length,r.page==='agenda')}
         ${nav('#/atendimentos','✎','Atendimentos',D.sessions.length,r.page==='atendimentos')}
         ${nav('#/galeria','◫','Antes & Depois',D.photos.length,r.page==='galeria')}
         ${nav('#/procedimentos','✦','Procedimentos',D.procedures.length,r.page==='procedimentos')}
         <div class="grp">Sistema</div>
-        ${nav('#/ajustes','⚙','Backup e ajustes',undefined,r.page==='ajustes')}
+        ${nav('#/ajustes','⚙','Ajustes e backup',undefined,r.page==='ajustes')}
       </nav>
       <div class="foot">Dados salvos neste computador</div>
     </aside>
     <div class="scrim" id="scrim"></div>
+    <nav class="bnav">
+      ${[['#/painel','◧','Início','painel'],['#/agenda','▦','Agenda','agenda'],['#/clientes','☺','Clientes','clientes'],['#/atendimentos','✎','Histórico','atendimentos']].map(([h,i,l,k])=>`<a href="${h}" class="${r.page===k||(k==='clientes'&&inCli)?'on':''}"><span>${i}</span>${l}</a>`).join('')}
+      <a href="#" id="bMore" class="${['galeria','procedimentos','relacionamento','ajustes'].includes(r.page)?'on':''}"><span>☰</span>Mais</a>
+    </nav>
     <div class="main">
       <header class="topbar">
         <button class="btn ghost menu" id="menuBtn">☰</button>
@@ -479,14 +506,15 @@ function render(){
       <main class="content" id="content"></main>
     </div>
   </div>`;
-  const pages={painel:pPainel,agenda:pAgenda,clientes:pClientes,nova:pNova,cliente:pCliente,atendimentos:pAtend,galeria:pGaleria,procedimentos:pProc,ajustes:pAjustes};
-  $('#content').innerHTML=installBanner()+backupBanner()+(pages[r.page]||pPainel)(r);
+  const pages={relacionamento:pRelac,painel:pPainel,agenda:pAgenda,clientes:pClientes,nova:pNova,cliente:pCliente,atendimentos:pAtend,galeria:pGaleria,procedimentos:pProc,ajustes:pAjustes};
+  $('#content').innerHTML=(pages[r.page]||pPainel)(r);
   wireShell();
   (after[r.page]||(()=>{}))(r);
 }
 function wireShell(){
   const side=$('#side'),scrim=$('#scrim');
   $('#menuBtn').onclick=()=>{side.classList.add('open');scrim.classList.add('on')};
+  $('#bMore').onclick=e=>{e.preventDefault();side.classList.add('open');scrim.classList.add('on')};
   scrim.onclick=()=>{side.classList.remove('open');scrim.classList.remove('on')};
   // busca global com resultados instantâneos
   const gq=$('#gq'),gr=$('#gres');let hl=0,found=[];
@@ -527,57 +555,71 @@ const after={};
 
 /* ================= PAINEL ================= */
 function pPainel(){
-  const s=settings(), t=today(), ym=t.slice(0,7), y=t.slice(0,4);
+  const t=today(), ym=t.slice(0,7);
   const h=new Date().getHours();
   const saud=h<12?'Bom dia':h<18?'Boa tarde':'Boa noite';
   const sesMes=D.sessions.filter(x=>(x.data||'').startsWith(ym));
-  const novasMes=D.clients.filter(c=>c.criado&&new Date(c.criado).toISOString().slice(0,7)===ym);
-  const sesHoje=D.sessions.filter(x=>x.data===t);
-  const ultimos=[...D.sessions].sort((a,b)=>(b.data||'').localeCompare(a.data||'')||(b.criado||0)-(a.criado||0)).slice(0,6);
-  const mes=new Date().getMonth()+1;
-  const aniv=D.clients.filter(c=>c.nascimento&&+c.nascimento.slice(5,7)===mes).sort((a,b)=>a.nascimento.slice(8).localeCompare(b.nascimento.slice(8)));
-  const sumidas=D.clients.map(c=>({c,u:sessOf(c.id)[0]})).filter(x=>x.u&&daysSince(x.u.data)>=60).sort((a,b)=>a.u.data.localeCompare(b.u.data)).slice(0,6);
-  const cont={};D.sessions.filter(x=>(x.data||'').startsWith(y)).forEach(x=>{const k=x.procedimento||'Sem nome';cont[k]=(cont[k]||0)+1});
-  const top=Object.entries(cont).sort((a,b)=>b[1]-a[1]).slice(0,6);const mx=top[0]?.[1]||1;
-  const mesNome=new Date().toLocaleDateString('pt-BR',{month:'long'});
-
+  const hoje=apptsOn(t);
+  const ultimos=[...D.sessions].sort((a,b)=>(b.data||'').localeCompare(a.data||'')||(b.criado||0)-(a.criado||0)).slice(0,5);
+  const aniv=anivDoMes(new Date().getMonth()+1), sumidas=semRetorno(60);
   const temDemo=D.clients.some(c=>c.demo);
-  const teste=`<div class="banner" style="background:var(--sage-l);border-color:#cfdbd2;color:#3f5546">🧪 <span><b>Versão de teste.</b> ${temDemo?'Você está vendo clientes de exemplo.':'Quer ver o sistema preenchido? Carregue clientes de exemplo.'} Não cadastre clientes reais nesta versão.</span>${temDemo?'<button class="btn sm" onclick="clearDemo()">Apagar exemplos</button>':'<button class="btn sm" onclick="loadDemo()">Carregar exemplos</button>'}</div>`;
-  return teste+`<div class="ptitle"><div><h2>${saud}!</h2><p>${new Date().toLocaleDateString('pt-BR',{weekday:'long',day:'numeric',month:'long',year:'numeric'})}</p></div></div>
+  const teste=`<div class="banner sm" style="background:var(--sage-l);border-color:#cfdbd2;color:#3f5546">🧪 <span><b>Versão de teste.</b> ${temDemo?'Mostrando clientes de exemplo.':'Não cadastre clientes reais.'}</span>${temDemo?'<button class="btn sm" onclick="clearDemo()">Apagar exemplos</button>':'<button class="btn sm" onclick="loadDemo()">Carregar exemplos</button>'}</div>`;
+  const lemb=[aniv.length?`🎂 ${plural(aniv.length,'aniversariante','aniversariantes')} este mês`:'',sumidas.length?`💬 ${plural(sumidas.length,'cliente sem retorno','clientes sem retorno')} há 60+ dias`:''].filter(Boolean);
+  return installBanner()+backupBanner()+teste+`<div class="ptitle"><div><h2>${saud}!</h2><p>${cap1(new Date().toLocaleDateString('pt-BR',{weekday:'long',day:'numeric',month:'long'}))}</p></div></div>
   <div class="kpis">
-    <div class="kpi" onclick="go('#/clientes')"><div class="l">Clientes cadastradas</div><div class="v">${D.clients.length}</div><div class="s">+${novasMes.length} este mês</div></div>
-    <div class="kpi" onclick="go('#/atendimentos')"><div class="l">Atendimentos no mês</div><div class="v">${sesMes.length}</div><div class="s">${plural(sesHoje.length,'hoje','hoje')}</div></div>
-    <div class="kpi" onclick="ui.agDay=today();ui.agMonth=today().slice(0,7);go('#/agenda')"><div class="l">Agendados hoje</div><div class="v">${apptsOn(t).filter(a=>a.status!=='cancelado').length}</div><div class="s">${plural(D.appointments.filter(a=>a.status==='agendado'&&a.data>t&&a.data<=addDays(t,7)).length,'nos próximos 7 dias','nos próximos 7 dias')}</div></div>
-    <div class="kpi" onclick="document.getElementById('aniv').scrollIntoView({behavior:'smooth'})"><div class="l">Aniversariantes</div><div class="v">${aniv.length}</div><div class="s">em ${mesNome}</div></div>
+    <div class="kpi" onclick="ui.agDay=today();ui.agMonth=today().slice(0,7);go('#/agenda')"><div class="l">Agendados hoje</div><div class="v">${hoje.filter(a=>a.status!=='cancelado').length}</div><div class="s">${plural(D.appointments.filter(a=>a.status==='agendado'&&a.data>t&&a.data<=addDays(t,7)).length,'nos próximos 7 dias','nos próximos 7 dias')}</div></div>
+    <div class="kpi" onclick="ui.aPer='mes';go('#/atendimentos')"><div class="l">Atendimentos no mês</div><div class="v">${sesMes.length}</div><div class="s">ver histórico</div></div>
+    <div class="kpi" onclick="go('#/clientes')"><div class="l">Clientes</div><div class="v">${D.clients.length}</div><div class="s">ver lista</div></div>
+    <div class="kpi" onclick="go('#/relacionamento/aniversariantes')"><div class="l">Aniversariantes</div><div class="v">${aniv.length}</div><div class="s">este mês</div></div>
   </div>
   <div class="quick">
-    <button onclick="go('#/nova')"><span class="qi">＋</span><span><b>Cadastrar cliente</b><small>Dados e ficha de anamnese</small></span></button>
-    <button onclick="sessionModal()"><span class="qi">✎</span><span><b>Registrar atendimento</b><small>Procedimento, evolução e fotos</small></span></button>
-    <button onclick="apptModal()"><span class="qi">▦</span><span><b>Agendar horário</b><small>Marcar atendimento na agenda</small></span></button>
+    <button onclick="apptModal()"><span class="qi">▦</span><span><b>Agendar horário</b><small>Marcar na agenda</small></span></button>
+    <button onclick="sessionModal()"><span class="qi">✎</span><span><b>Registrar atendimento</b><small>Evolução e fotos</small></span></button>
+    <button onclick="go('#/nova')"><span class="qi">＋</span><span><b>Cadastrar cliente</b><small>Dados e anamnese</small></span></button>
   </div>
   <div class="dash">
-    <div class="col">
-      <div class="card"><h3>Últimos atendimentos <a href="#/atendimentos">ver todos →</a></h3>
-        ${ultimos.length?ultimos.map(x=>{const c=client(x.clientId);if(!c)return'';const n=D.photos.filter(p=>p.sessionId===x.id).length;
-          return `<div class="li" onclick="go('#/cliente/${c.id}/evolucao')">${avatar(c)}<div class="t"><b>${esc(c.nome)}</b><small>${esc(x.procedimento||'Atendimento')}${x.regiao?' · '+esc(x.regiao):''}${n?` · 📷 ${n}`:''}</small></div><div class="r">${fmtDate(x.data)}<br>${ago(x.data)}</div></div>`}).join('')
-        :`<div class="none">Nenhum atendimento registrado ainda. <a href="#" onclick="sessionModal();return false">Registrar o primeiro</a>.</div>`}
-      </div>
-      <div class="card"><h3>Procedimentos mais realizados <span class="muted" style="font-size:13px;font-family:sans-serif">· ${y}</span></h3>
-        ${top.length?`<div class="bars">${top.map(([k,v])=>`<div class="b"><span title="${esc(k)}">${esc(k)}</span><div class="track"><div class="fill" style="width:${v/mx*100}%"></div></div><span>${v}</span></div>`).join('')}</div>`:'<div class="none">Aparece aqui conforme os atendimentos forem registrados.</div>'}
-      </div>
+    <div class="card"><h3>▦ Agenda de hoje <a href="#/agenda" onclick="ui.agDay=today();ui.agMonth=today().slice(0,7)">abrir agenda →</a></h3>
+      ${hoje.length?hoje.map(a=>apptRowMini(a)).join(''):'<div class="none">Nenhum horário marcado para hoje. <a href="#" onclick="apptModal();return false">Agendar</a>.</div>'}
     </div>
     <div class="col">
-      <div class="card"><h3>▦ Agenda de hoje <a href="#/agenda" onclick="ui.agDay=today();ui.agMonth=today().slice(0,7)">ver agenda →</a></h3>
-        ${(()=>{const l=apptsOn(t);return l.length?l.map(a=>apptRowMini(a)).join(''):'<div class="none">Nenhum horário marcado para hoje. <a href="#" onclick="apptModal();return false">Agendar</a>.</div>'})()}
-      </div>
-      <div class="card" id="aniv"><h3>🎂 Aniversariantes de ${mesNome}</h3>
-        ${aniv.length?aniv.map(c=>`<div class="li" onclick="go('#/cliente/${c.id}')">${avatar(c)}<div class="t"><b>${esc(c.nome)}</b><small>${fmtDate(c.nascimento).slice(0,5)} · faz ${+age(c.nascimento).split(' ')[0]+(c.nascimento.slice(5)>today().slice(5)?1:0)} anos</small></div>${c.nascimento.slice(5)===today().slice(5)?'<span class="pill">hoje!</span>':''}</div>`).join(''):'<div class="none">Nenhuma aniversariante este mês.</div>'}
-      </div>
-      <div class="card"><h3>Sem retorno há mais de 60 dias</h3>
-        ${sumidas.length?sumidas.map(({c,u})=>`<div class="li" onclick="go('#/cliente/${c.id}/evolucao')">${avatar(c)}<div class="t"><b>${esc(c.nome)}</b><small>Último: ${esc(u.procedimento||'atendimento')}</small></div><div class="r">${ago(u.data)}</div></div>`).join(''):'<div class="none">Todas as clientes estão em dia. 👏</div>'}
+      ${lemb.length?`<a class="card remind" href="#/relacionamento">${lemb.map(x=>`<div>${x}</div>`).join('')}<span>ver relacionamento →</span></a>`:''}
+      <div class="card"><h3>Últimos atendimentos <a href="#/atendimentos">ver todos →</a></h3>
+        ${ultimos.length?ultimos.map(x=>{const c=client(x.clientId);if(!c)return'';
+          return `<div class="li" onclick="go('#/cliente/${c.id}/evolucao')">${avatar(c)}<div class="t"><b>${esc(c.nome)}</b><small>${esc(x.procedimento||'Atendimento')}</small></div><div class="r">${ago(x.data)}</div></div>`}).join('')
+        :`<div class="none">Nenhum atendimento registrado ainda.</div>`}
       </div>
     </div>
   </div>`;
+}
+
+/* ================= RELACIONAMENTO ================= */
+function anivDoMes(mes){return D.clients.filter(c=>c.nascimento&&+c.nascimento.slice(5,7)===mes).sort((a,b)=>a.nascimento.slice(8).localeCompare(b.nascimento.slice(8)))}
+function semRetorno(dias){return D.clients.map(c=>({c,u:sessOf(c.id)[0]})).filter(x=>x.u&&daysSince(x.u.data)>=dias&&!D.appointments.some(a=>a.clientId===x.c.id&&a.status==='agendado'&&a.data>=today())).sort((a,b)=>a.u.data.localeCompare(b.u.data))}
+function waBtn(c,msg,label){const tel=(c.telefone||'').replace(/\D/g,'').replace(/^55(?=\d{10,11}$)/,'');
+  return tel&&c.whatsapp!==false?`<a class="btn sm" target="_blank" onclick="event.stopPropagation()" href="https://wa.me/55${tel}?text=${encodeURIComponent(msg)}">${label}</a>`:''}
+function subTabs(base,tabs,cur){return `<div class="tabs">${tabs.map(([k,l,n])=>`<a class="tab ${cur===k?'on':''}" href="${base}/${k}">${l}${n?`<span class="count">${n}</span>`:''}</a>`).join('')}</div>`}
+function pRelac(r){
+  const tab=['aniversariantes','sem-retorno','procedimentos'].includes(r.id)?r.id:'aniversariantes';
+  ui.relMes=ui.relMes||new Date().getMonth()+1;ui.relDias=ui.relDias||60;
+  const aniv=anivDoMes(ui.relMes),sum=semRetorno(ui.relDias),nome=settings().nome;
+  let h=`<div class="ptitle"><div><h2>Relacionamento</h2><p>Datas especiais e clientes para chamar de volta</p></div></div>`+
+    subTabs('#/relacionamento',[['aniversariantes','Aniversariantes',anivDoMes(new Date().getMonth()+1).length],['sem-retorno','Sem retorno',semRetorno(60).length],['procedimentos','Mais realizados']],tab);
+  if(tab==='aniversariantes'){
+    const meses=[...Array(12)].map((_,i)=>cap1(new Date(2026,i,1).toLocaleDateString('pt-BR',{month:'long'})));
+    h+=`<div class="filters"><select onchange="ui.relMes=+this.value;render()">${meses.map((m,i)=>`<option value="${i+1}" ${ui.relMes===i+1?'selected':''}>${m}</option>`).join('')}</select><span class="muted">${plural(aniv.length,'aniversariante','aniversariantes')}</span></div>
+    <div class="card">${aniv.length?aniv.map(c=>{const hojeA=c.nascimento.slice(5)===today().slice(5);
+      return `<div class="li" onclick="go('#/cliente/${c.id}')">${avatar(c)}<div class="t"><b>${esc(c.nome)}</b><small>${fmtDate(c.nascimento).slice(0,5)}${hojeA?' · <b style="display:inline;color:var(--rose-d)">hoje!</b>':''}</small></div>${waBtn(c,`Feliz aniversário, ${c.nome.split(' ')[0]}! 🎉 A equipe do ${nome} deseja um dia lindo pra você!`,'Enviar parabéns')}</div>`}).join(''):'<div class="none">Nenhuma aniversariante neste mês.</div>'}</div>`;
+  }
+  if(tab==='sem-retorno'){
+    h+=`<div class="filters"><select onchange="ui.relDias=+this.value;render()">${[30,60,90,180].map(d=>`<option value="${d}" ${ui.relDias===d?'selected':''}>Sem vir há ${d}+ dias</option>`).join('')}</select><span class="muted">${plural(sum.length,'cliente','clientes')} · quem já tem horário marcado não aparece aqui</span></div>
+    <div class="card">${sum.length?sum.map(({c,u})=>`<div class="li" onclick="go('#/cliente/${c.id}/evolucao')">${avatar(c)}<div class="t"><b>${esc(c.nome)}</b><small>Último: ${esc(u.procedimento||'atendimento')} · ${ago(u.data)}</small></div>${waBtn(c,`Oi, ${c.nome.split(' ')[0]}! Tudo bem? Faz um tempinho que você não vem ao ${nome}. Quer agendar um horário? 💆‍♀️`,'Chamar no WhatsApp')}<button class="btn sm" onclick="event.stopPropagation();apptModal(null,{clientId:'${c.id}'})">Agendar</button></div>`).join(''):'<div class="none">Todas as clientes estão em dia. 👏</div>'}</div>`;
+  }
+  if(tab==='procedimentos'){
+    const y=today().slice(0,4),cont={};D.sessions.filter(x=>(x.data||'').startsWith(y)).forEach(x=>{const k=x.procedimento||'Sem nome';cont[k]=(cont[k]||0)+1});
+    const top=Object.entries(cont).sort((a,b)=>b[1]-a[1]);const mx=top[0]?.[1]||1;
+    h+=`<div class="card"><h3>Procedimentos mais realizados em ${y}</h3>${top.length?`<div class="bars">${top.map(([k,v])=>`<div class="b"><span title="${esc(k)}">${esc(k)}</span><div class="track"><div class="fill" style="width:${v/mx*100}%"></div></div><span>${v}</span></div>`).join('')}</div>`:'<div class="none">Aparece aqui conforme os atendimentos forem registrados.</div>'}</div>`;
+  }
+  return h;
 }
 
 /* ================= CLIENTES (lista) ================= */
@@ -842,34 +884,32 @@ function procModal(id){
 async function delProc(id){if(!confirm('Excluir este procedimento da lista? Os atendimentos já registrados não são apagados.'))return;await DB.del('procedures',id);await load();closeModal();render()}
 
 /* ================= AJUSTES / BACKUP ================= */
-function pAjustes(){
+function pAjustes(r){
   const s=settings(),last=LS.get('fe-lastbackup',0);
-  return `<div class="ptitle"><div><h2>Backup e ajustes</h2><p>Configurações do sistema e cópia de segurança dos dados</p></div></div>
-  <div class="dash">
-    <div class="col">
-      <div class="card"><h3>Dados do espaço</h3>
-        <div class="grid">
-          <div class="field full"><label>Nome do espaço</label><input id="sNome" value="${esc(s.nome)}"></div>
-          <div class="field full"><label>Senha de acesso (opcional, 4 a 8 números)</label><input id="sPin" type="password" inputmode="numeric" placeholder="Deixe vazio para não pedir senha" value="${esc(s.pin)}"></div>
-        </div>
-        <div class="row" style="justify-content:flex-end;margin-top:14px"><button class="btn primary" onclick="saveSettings()">Salvar ajustes</button></div>
+  const tab=['espaco','backup','exportar'].includes(r.id)?r.id:'espaco';
+  let h=`<div class="ptitle"><div><h2>Ajustes</h2><p>Configurações do sistema e cópia de segurança</p></div></div>`+
+    subTabs('#/ajustes',[['espaco','Dados do espaço'],['backup','Backup'],['exportar','Exportar']],tab);
+  if(tab==='espaco')h+=`<div class="card narrow">
+      <div class="grid">
+        <div class="field full"><label>Nome do espaço</label><input id="sNome" value="${esc(s.nome)}"></div>
+        <div class="field full"><label>Senha de acesso (opcional, 4 a 8 números)</label><input id="sPin" type="password" inputmode="numeric" placeholder="Deixe vazio para não pedir senha" value="${esc(s.pin)}"></div>
       </div>
-    </div>
-    <div class="col">
-      <div class="card"><h3>💾 Cópia de segurança</h3>
-        <p class="muted" style="font-size:14px;margin-top:0">Nesta versão os dados ficam <b>neste computador</b>. Baixe um backup com frequência e guarde fora dele (pen drive, Google Drive).</p>
-        <p style="font-size:14px">Último backup: <b>${last?new Date(last).toLocaleString('pt-BR'):'nunca'}</b></p>
-        <div class="row"><button class="btn primary" onclick="exportBackup()">⇩ Baixar backup completo</button><button class="btn" onclick="$('#impIn').click()">⇧ Restaurar backup</button><input type="file" id="impIn" accept=".json" hidden></div>
-        <p class="muted" style="font-size:13px" id="usage">${D.clients.length} clientes · ${D.sessions.length} atendimentos · ${D.photos.length} fotos</p>
-      </div>
-      <div class="card"><h3>⇩ Exportar</h3>
-        <p class="muted" style="font-size:14px;margin-top:0">Lista de clientes em planilha (abre no Excel). Para a ficha completa de uma cliente, use “Imprimir ficha” e escolha “Salvar como PDF”.</p>
-        <button class="btn" onclick="exportCSV()">Baixar lista de clientes (.csv)</button>
-      </div>
-    </div>
-  </div>`;
+      <div class="row" style="justify-content:flex-end;margin-top:14px"><button class="btn primary" onclick="saveSettings()">Salvar ajustes</button></div>
+    </div>`;
+  if(tab==='backup')h+=backupBanner()+`<div class="card narrow">
+      <p class="muted" style="font-size:14px;margin-top:0">Nesta versão os dados ficam <b>neste aparelho</b>. Baixe um backup com frequência e guarde fora dele (pen drive, Google Drive).</p>
+      <p style="font-size:14px">Último backup: <b>${last?new Date(last).toLocaleString('pt-BR'):'nunca'}</b></p>
+      <div class="row"><button class="btn primary" onclick="exportBackup()">⇩ Baixar backup completo</button><button class="btn" onclick="$('#impIn').click()">⇧ Restaurar backup</button><input type="file" id="impIn" accept=".json" hidden></div>
+      <p class="muted" style="font-size:13px" id="usage">${D.clients.length} clientes · ${D.sessions.length} atendimentos · ${D.photos.length} fotos · ${D.appointments.length} agendamentos</p>
+    </div>`;
+  if(tab==='exportar')h+=`<div class="card narrow">
+      <p class="muted" style="font-size:14px;margin-top:0">Lista de clientes em planilha (abre no Excel). Para a ficha completa de uma cliente, use “Imprimir ficha” e escolha “Salvar como PDF”.</p>
+      <button class="btn" onclick="exportCSV()">⇩ Baixar lista de clientes (.csv)</button>
+    </div>`;
+  return h;
 }
 after.ajustes=async()=>{
+  if(!$('#impIn'))return;
   $('#impIn').onchange=e=>e.target.files[0]&&importBackup(e.target.files[0]);
   try{const e=await navigator.storage.estimate();$('#usage').textContent+=` · ${(e.usage/1048576).toFixed(1)} MB usados`}catch{}
 };
